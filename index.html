@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RFT Entertainment — Refactored</title>
+    
+    <!-- External Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- External Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    
+    <!-- Refactored CSS -->
+    <link rel="stylesheet" href="styles/core.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/pages.css">
+    <link rel="stylesheet" href="styles/themes.css">
+</head>
+<body>
+    <!-- Background Container -->
+    <div class="bg-container">
+        <div class="bg-grid">
+            <img src="https://via.placeholder.com/400x140/1a1a1a/d4a843?text=RFT" alt="">
+            <img src="https://via.placeholder.com/400x140/1a1a1a/d4a843?text=Entertainment" alt="">
+            <img src="https://via.placeholder.com/400x140/1a1a1a/d4a843?text=Video" alt="">
+            <img src="https://via.placeholder.com/400x140/1a1a1a/d4a843?text=Tasks" alt="">
+        </div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Login Page -->
+        <div class="page" id="loginPage">
+            <div class="top-bar">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <button class="language-btn">
+                    <i class="ph-bold ph-globe"></i> EN
+                </button>
+            </div>
+            
+            <div class="logo-section">
+                <div class="logo-glow"></div>
+                <img src="https://via.placeholder.com/140x140/1a1a1a/d4a843?text=RFT" alt="RFT Logo" class="logo-img">
+            </div>
+
+            <div class="form-card">
+                <h2 class="form-title">Welcome Back</h2>
+                <p class="form-subtitle">Sign in to your RFT account</p>
+
+                <div class="input-group">
+                    <label class="input-label">Email or Phone</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-user input-icon"></i>
+                        <input type="text" class="form-input" id="loginEmail" placeholder="Enter email or phone">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Password</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-lock input-icon"></i>
+                        <input type="password" class="form-input" id="loginPassword" placeholder="Enter password">
+                        <button class="toggle-password">
+                            <i class="ph-bold ph-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="rememberMe">
+                    <label class="checkbox-label" for="rememberMe">Remember me</label>
+                </div>
+
+                <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+                <button class="btn-google">
+                    <img src="https://via.placeholder.com/20x20/fff/4285f4?text=G" alt="Google">
+                    Sign in with Google
+                </button>
+
+                <div class="form-footer">
+                    <p>Don't have an account? <span class="form-link" onclick="RFTApp.navigate('registerPage')">Sign Up</span></p>
+                    <p><span class="form-link" onclick="RFTApp.navigate('forgotPage')">Forgot Password?</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div class="page" id="registerPage">
+            <div class="top-bar">
+                <button class="back-btn" onclick="RFTApp.navigate('loginPage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <button class="language-btn">
+                    <i class="ph-bold ph-globe"></i> EN
+                </button>
+            </div>
+
+            <div class="logo-section">
+                <div class="logo-glow"></div>
+                <img src="https://via.placeholder.com/140x140/1a1a1a/d4a843?text=RFT" alt="RFT Logo" class="logo-img">
+            </div>
+
+            <div class="form-card">
+                <h2 class="form-title">Create Account</h2>
+                <p class="form-subtitle">Join RFT Entertainment today</p>
+
+                <div class="input-group">
+                    <label class="input-label">Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-user input-icon"></i>
+                        <input type="text" class="form-input" id="registerName" placeholder="Enter your name">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Email</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-envelope input-icon"></i>
+                        <input type="email" class="form-input" id="registerEmail" placeholder="Enter email">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Phone</label>
+                    <div class="input-wrapper">
+                        <span class="country-code">+92 🇵🇰</span>
+                        <input type="tel" class="form-input" id="registerPhone" placeholder="Enter phone number">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Password</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-lock input-icon"></i>
+                        <input type="password" class="form-input" id="registerPassword" placeholder="Create password">
+                        <button class="toggle-password">
+                            <i class="ph-bold ph-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="agreeTerms">
+                    <label class="checkbox-label" for="agreeTerms">I agree to the Terms & Conditions</label>
+                </div>
+
+                <button class="btn-primary" onclick="handleRegister()">Create Account</button>
+                <button class="btn-google">
+                    <img src="https://via.placeholder.com/20x20/fff/4285f4?text=G" alt="Google">
+                    Sign up with Google
+                </button>
+
+                <div class="form-footer">
+                    <p>Already have an account? <span class="form-link" onclick="RFTApp.navigate('loginPage')">Sign In</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Page -->
+        <div class="page home-page" id="homePage">
+            <div class="anniversary-banner">
+                <div class="banner-ribbon"></div>
+                <div class="anniversary-text">
+                    RFT ENTERTAINMENT
+                    <small>VIDEO REWARD PLATFORM</small>
+                </div>
+            </div>
+
+            <div class="welcome-bar">
+                <i class="ph-bold ph-star"></i>
+                <span class="welcome-text">Welcome to RFT Entertainment - Earn rewards by watching videos!</span>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-item" onclick="RFTApp.navigate('tasksPage')">
+                    <div class="feature-icon"><i class="ph-bold ph-play-circle"></i></div>
+                    <span class="feature-label">Tasks</span>
+                </div>
+                <div class="feature-item" onclick="RFTApp.navigate('rechargePage')">
+                    <div class="feature-icon green"><i class="ph-bold ph-arrow-down-left"></i></div>
+                    <span class="feature-label">Recharge</span>
+                </div>
+                <div class="feature-item" onclick="RFTApp.navigate('withdrawPage')">
+                    <div class="feature-icon blue"><i class="ph-bold ph-arrow-up-right"></i></div>
+                    <span class="feature-label">Withdraw</span>
+                </div>
+                <div class="feature-item" onclick="RFTApp.navigate('walletPage')">
+                    <div class="feature-icon purple"><i class="ph-bold ph-wallet"></i></div>
+                    <span class="feature-label">Wallet</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon orange"><i class="ph-bold ph-star"></i></div>
+                    <span class="feature-label">Points</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon pink"><i class="ph-bold ph-clover"></i></div>
+                    <span class="feature-label">Lucky</span>
+                </div>
+                <div class="feature-item" onclick="RFTApp.navigate('newsCenterPage')">
+                    <div class="feature-icon cyan"><i class="ph-bold ph-newspaper"></i></div>
+                    <span class="feature-label">News</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="ph-bold ph-users"></i></div>
+                    <span class="feature-label">Agent</span>
+                </div>
+            </div>
+
+            <!-- Task Hall Section -->
+            <section class="rft-task-hall" id="rftTaskHall">
+                <div class="rft-task-hall-head">
+                    <h3 class="rft-task-hall-title">Task Hall</h3>
+                </div>
+                <div class="rft-task-stats">
+                    <div class="rft-task-stat-card rft-task-stat-done">
+                        <div class="rft-task-stat-value">0</div>
+                        <div class="rft-task-stat-label">Completed</div>
+                    </div>
+                    <div class="rft-task-stat-card rft-task-stat-left">
+                        <div class="rft-task-stat-value">10</div>
+                        <div class="rft-task-stat-label">Remaining</div>
+                    </div>
+                </div>
+                <div class="rft-task-list">
+                    <!-- Tasks will be rendered by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Member Rankings -->
+            <section class="rft-video-member-rank" id="rftVideoMemberRank">
+                <!-- Rankings will be rendered by JavaScript -->
+            </section>
+        </div>
+
+        <!-- Tasks Page -->
+        <div class="page tasks-page" id="tasksPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>Task Hall</h2>
+            </div>
+
+            <div class="rft-task-shell">
+                <div class="rft-task-header">
+                    <h2>Available Tasks</h2>
+                </div>
+                <div class="rft-task-stats">
+                    <div class="rft-task-stat-card rft-task-stat-done">
+                        <div class="rft-task-stat-value">0</div>
+                        <div class="rft-task-stat-label">Completed</div>
+                    </div>
+                    <div class="rft-task-stat-card rft-task-stat-left">
+                        <div class="rft-task-stat-value">10</div>
+                        <div class="rft-task-stat-label">Remaining</div>
+                    </div>
+                </div>
+                <div class="rft-task-list">
+                    <!-- Tasks will be rendered by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Page -->
+        <div class="page wallet-page" id="walletPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>My Wallet</h2>
+            </div>
+
+            <div class="wallet-card">
+                <div class="wallet-header">
+                    <span>Total Balance</span>
+                    <strong>Rs. 0.00</strong>
+                </div>
+                <div class="wallet-row">
+                    <div class="wallet-col">
+                        <span>USDT</span>
+                        <strong>0.00</strong>
+                    </div>
+                    <div class="wallet-col">
+                        <span>Points</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="wallet-actions">
+                    <button class="btn-recharge" onclick="RFTApp.navigate('rechargePage')">Recharge</button>
+                    <button class="btn-withdraw" onclick="RFTApp.navigate('withdrawPage')">Withdraw</button>
+                </div>
+            </div>
+
+            <div class="transaction-list">
+                <!-- Transactions will be rendered by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Recharge Page -->
+        <div class="page recharge-page" id="rechargePage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('walletPage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>Recharge</h2>
+            </div>
+
+            <div class="amount-input-box">
+                <label class="input-label">Amount (USDT)</label>
+                <div class="input-wrapper">
+                    <input type="number" class="form-input" id="rechargeAmount" placeholder="Enter amount">
+                </div>
+            </div>
+
+            <div class="section-title">Payment Method</div>
+            <div id="rechargeMethods">
+                <!-- Payment methods will be rendered by JavaScript -->
+            </div>
+
+            <button class="btn-primary" onclick="handleRecharge()">Confirm Recharge</button>
+        </div>
+
+        <!-- Withdraw Page -->
+        <div class="page withdraw-page" id="withdrawPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('walletPage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>Withdraw</h2>
+            </div>
+
+            <div class="amount-input-box">
+                <label class="input-label">Amount (USDT)</label>
+                <div class="input-wrapper">
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="Enter amount">
+                </div>
+            </div>
+
+            <div class="section-title">Payment Method</div>
+            <div id="withdrawMethods">
+                <!-- Payment methods will be rendered by JavaScript -->
+            </div>
+
+            <button class="btn-primary" onclick="handleWithdraw()">Confirm Withdrawal</button>
+        </div>
+
+        <!-- Profile Page -->
+        <div class="page profile-page" id="mypagePage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>My Profile</h2>
+            </div>
+
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img src="https://via.placeholder.com/80x80/1a1a1a/d4a843?text=User" alt="Avatar">
+                </div>
+                <div class="profile-info">
+                    <h3>User Name</h3>
+                    <p>user@example.com</p>
+                </div>
+            </div>
+
+            <div class="profile-menu">
+                <div class="profile-menu-item" onclick="RFTApp.navigate('personalInfoPage')">
+                    <i class="ph-bold ph-user"></i>
+                    <span>Personal Information</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </div>
+                <div class="profile-menu-item">
+                    <i class="ph-bold ph-shield-check"></i>
+                    <span>KYC Verification</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </div>
+                <div class="profile-menu-item">
+                    <i class="ph-bold ph-gear"></i>
+                    <span>Settings</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </div>
+                <div class="profile-menu-item" onclick="handleLogout()">
+                    <i class="ph-bold ph-sign-out"></i>
+                    <span>Logout</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Info Page -->
+        <div class="page personal-info-page" id="personalInfoPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('mypagePage')">
+                    <i class="ph-bold ph-arrow-left"></i>
+                </button>
+                <h2>Personal Information</h2>
+            </div>
+
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">User Name</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">user@example.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">+92 300 1234567</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottomNav">
+            <div class="nav-item active" data-page="homePage">
+                <i class="ph-bold ph-house"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" data-page="tasksPage">
+                <i class="ph-bold ph-play-circle"></i>
+                <span>Tasks</span>
+            </div>
+            <div class="nav-item" data-page="walletPage">
+                <i class="ph-bold ph-wallet"></i>
+                <span>Wallet</span>
+            </div>
+            <div class="nav-item" data-page="mypagePage">
+                <i class="ph-bold ph-user"></i>
+                <span>Profile</span>
+            </div>
+        </nav>
+
+        <!-- Floating Buttons -->
+        <div class="floating-buttons" id="floatingButtons">
+            <button class="fab whatsapp">
+                <i class="ph-bold ph-whatsapp-logo"></i>
+            </button>
+            <button class="fab support">
+                <i class="ph-bold ph-headset"></i>
+            </button>
+            <button class="fab refresh">
+                <i class="ph-bold ph-arrows-clockwise"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Task Preview Modal -->
+    <div class="modal-overlay" id="rftTaskPreview">
+        <!-- Content will be rendered by JavaScript -->
+    </div>
+
+    <!-- KYC Overlay -->
+    <div class="rft-kyc-overlay" id="rftKycOverlay" hidden>
+        <div class="rft-kyc-sheet" role="dialog" aria-modal="true">
+            <div class="rft-kyc-sheet-head">
+                <button type="button" class="rft-kyc-close" onclick="RFTWallet.closeKyc()">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+                <div>
+                    <div class="rft-kyc-kicker">IDENTITY & COMPLIANCE</div>
+                    <h2>KYC Verification</h2>
+                </div>
+                <span class="rft-kyc-step">Step 1/2</span>
+            </div>
+            <div class="rft-kyc-panel">
+                <div class="rft-kyc-note">
+                    <i class="ph-bold ph-shield-check"></i>
+                    <div>
+                        <b>Identity document</b>
+                        <span>Select issuing country and document type.</span>
+                    </div>
+                </div>
+                <label class="rft-kyc-label">Issuing Country</label>
+                <select class="rft-kyc-select">
+                    <option value="">Select country</option>
+                    <option>Pakistan</option>
+                    <option>India</option>
+                    <option>United Arab Emirates</option>
+                    <option>Saudi Arabia</option>
+                    <option>Other</option>
+                </select>
+                <button class="rft-kyc-primary" onclick="RFTWallet.closeKyc()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refactored JavaScript -->
+    <script src="js/api-client.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/task-engine.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Inline handlers for demo purposes -->
+    <script>
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const result = window.RFTAuth?.login(email, password);
+            
+            if (result?.success) {
+                window.RFTCore?.showToast?.('Login successful!', 'success');
+                window.RFTApp?.navigate?.('homePage');
+            } else {
+                window.RFTCore?.showToast?.(result?.message || 'Login failed', 'error');
+            }
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            const result = window.RFTAuth?.register({ name, email, phone, password });
+            
+            if (result?.success) {
+                window.RFTCore?.showToast?.('Registration successful!', 'success');
+                window.RFTApp?.navigate?.('homePage');
+            } else {
+                window.RFTCore?.showToast?.(result?.message || 'Registration failed', 'error');
+            }
+        }
+
+        function handleLogout() {
+            window.RFTAuth?.logout?.();
+        }
+
+        function handleRecharge() {
+            const amount = parseFloat(document.getElementById('rechargeAmount').value);
+            const method = window.RFTWallet?.getSelectedPaymentMethod?.();
+            
+            if (method) {
+                window.RFTWallet?.handleRecharge?.(amount, method.name);
+            } else {
+                window.RFTCore?.showToast?.('Please select a payment method', 'error');
+            }
+        }
+
+        function handleWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = window.RFTWallet?.getSelectedPaymentMethod?.();
+            
+            if (method) {
+                window.RFTWallet?.handleWithdraw?.(amount, method.name);
+            } else {
+                window.RFTCore?.showToast?.('Please select a payment method', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

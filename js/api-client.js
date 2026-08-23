@@ -1,206 +1,130 @@
-/* ============================================
-   RFT Entertainment - API Client
-   HTTP client for backend API communication
-   ============================================ */
+/* ============================================================
+   RFT Entertainment — API Client
+   HTTP client with auto token refresh
+   ============================================================ */
+(function () {
+  'use strict';
 
-(function() {
-    'use strict';
+  const BASE_URL = 'https://rft-backend-production.up.railway.app/api';
 
-    // API Configuration
-    const API_CONFIG = {
-        baseURL: 'https://rft-backend-production.up.railway.app/api',
-        timeout: 30000
-    };
+  let _accessToken  = localStorage.getItem('rft_access_token')  || '';
+  let _refreshToken = localStorage.getItem('rft_refresh_token') || '';
 
-    // Token storage
-    let accessToken = localStorage.getItem('rft_access_token');
-    let refreshToken = localStorage.getItem('rft_refresh_token');
+  function setTokens(access, refresh) {
+    _accessToken  = access;
+    _refreshToken = refresh;
+    localStorage.setItem('rft_access_token',  access);
+    localStorage.setItem('rft_refresh_token', refresh);
+  }
 
-    /**
-     * Set tokens
-     */
-    function setTokens(access, refresh) {
-        accessToken = access;
-        refreshToken = refresh;
-        localStorage.setItem('rft_access_token', access);
-        localStorage.setItem('rft_refresh_token', refresh);
+  function clearTokens() {
+    _accessToken  = '';
+    _refreshToken = '';
+    localStorage.removeItem('rft_access_token');
+    localStorage.removeItem('rft_refresh_token');
+  }
+
+  function getAccessToken()  { return _accessToken; }
+  function getRefreshToken() { return _refreshToken; }
+
+  async function refreshAccessToken() {
+    if (!_refreshToken) { clearTokens(); return false; }
+    try {
+      const r = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: _refreshToken })
+      });
+      if (!r.ok) { clearTokens(); return false; }
+      const data = await r.json();
+      if (data.success && data.data) {
+        setTokens(data.data.access_token, data.data.refresh_token);
+        return true;
+      }
+      clearTokens();
+      return false;
+    } catch (_) {
+      clearTokens();
+      return false;
+    }
+  }
+
+  async function request(endpoint, options = {}, retry = true) {
+    const url = `${BASE_URL}${endpoint}`;
+    const headers = { ...options.headers };
+
+    // Don't set Content-Type for FormData — browser sets it with boundary
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (_accessToken) {
+      headers['Authorization'] = `Bearer ${_accessToken}`;
     }
 
-    /**
-     * Clear tokens
-     */
-    function clearTokens() {
-        accessToken = null;
-        refreshToken = null;
-        localStorage.removeItem('rft_access_token');
-        localStorage.removeItem('rft_refresh_token');
-    }
+    try {
+      const res = await fetch(url, { ...options, headers });
 
-    /**
-     * Get access token
-     */
-    function getAccessToken() {
-        return accessToken;
-    }
-
-    /**
-     * Make HTTP request
-     */
-    async function request(endpoint, options = {}) {
-        const url = `${API_CONFIG.baseURL}${endpoint}`;
-        
-        const headers = {
-            'Content-Type': 'application/json',
-            ...options.headers
-        };
-
-        if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
+      // Auto-refresh on 401
+      if (res.status === 401 && retry && _refreshToken) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          return request(endpoint, options, false);
         }
+        // Refresh failed — redirect to login
+        clearTokens();
+        window.RFTCore?.clearAuth?.();
+        window.RFTCore?.showPage?.('loginPage');
+        throw new Error('Session expired. Please login again.');
+      }
 
-        const config = {
-            ...options,
-            headers
-        };
-
-        try {
-            const response = await fetch(url, config);
-            
-            // Handle 401 unauthorized
-            if (response.status === 401 && refreshToken) {
-                const refreshed = await refreshAccessToken();
-                if (refreshed) {
-                    headers['Authorization'] = `Bearer ${accessToken}`;
-                    return fetch(url, { ...config, headers });
-                }
-            }
-
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || 'Request failed');
-            }
-
-            return data;
-        } catch (error) {
-            console.error('API request error:', error);
-            throw error;
-        }
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      if (err.message === 'Failed to fetch') {
+        throw new Error('Network error. Check your internet connection.');
+      }
+      throw err;
     }
+  }
 
-    /**
-     * Refresh access token
-     */
-    async function refreshAccessToken() {
-        try {
-            const response = await fetch(`${API_CONFIG.baseURL}/auth/refresh`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refresh_token: refreshToken })
-            });
+  function get(endpoint, opts = {}) {
+    return request(endpoint, { ...opts, method: 'GET' });
+  }
 
-            if (!response.ok) {
-                clearTokens();
-                return false;
-            }
+  function post(endpoint, body, opts = {}) {
+    return request(endpoint, {
+      ...opts, method: 'POST',
+      body: typeof body === 'string' ? body : JSON.stringify(body)
+    });
+  }
 
-            const data = await response.json();
-            if (data.success && data.data) {
-                setTokens(data.data.access_token, data.data.refresh_token);
-                return true;
-            }
+  function put(endpoint, body, opts = {}) {
+    return request(endpoint, {
+      ...opts, method: 'PUT',
+      body: typeof body === 'string' ? body : JSON.stringify(body)
+    });
+  }
 
-            return false;
-        } catch (error) {
-            console.error('Token refresh error:', error);
-            clearTokens();
-            return false;
-        }
+  function del(endpoint, opts = {}) {
+    return request(endpoint, { ...opts, method: 'DELETE' });
+  }
+
+  // Upload — accepts either a FormData object or a single File + fieldName
+  async function upload(endpoint, fileOrFormData, fieldName = 'file') {
+    let formData;
+    if (fileOrFormData instanceof FormData) {
+      formData = fileOrFormData;
+    } else {
+      formData = new FormData();
+      formData.append(fieldName, fileOrFormData);
     }
+    // Use request() so we get the 401-refresh logic
+    return request(endpoint, { method: 'POST', body: formData });
+  }
 
-    /**
-     * GET request
-     */
-    function get(endpoint, options = {}) {
-        return request(endpoint, { ...options, method: 'GET' });
-    }
-
-    /**
-     * POST request
-     */
-    function post(endpoint, data, options = {}) {
-        return request(endpoint, {
-            ...options,
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    /**
-     * PUT request
-     */
-    function put(endpoint, data, options = {}) {
-        return request(endpoint, {
-            ...options,
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    /**
-     * DELETE request
-     */
-    function del(endpoint, options = {}) {
-        return request(endpoint, { ...options, method: 'DELETE' });
-    }
-
-    /**
-     * Upload file
-     */
-    async function upload(endpoint, file, fieldName = 'file') {
-        const formData = new FormData();
-        formData.append(fieldName, file);
-
-        const url = `${API_CONFIG.baseURL}${endpoint}`;
-        const headers = {};
-
-        if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: formData
-            });
-
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || 'Upload failed');
-            }
-
-            return data;
-        } catch (error) {
-            console.error('Upload error:', error);
-            throw error;
-        }
-    }
-
-    // ==================== EXPORTS ====================
-
-    window.RFTApi = {
-        config: API_CONFIG,
-        setTokens,
-        clearTokens,
-        getAccessToken,
-        request,
-        get,
-        post,
-        put,
-        del,
-        upload
-    };
-
+  window.RFTApi = {
+    BASE_URL,
+    setTokens, clearTokens, getAccessToken, getRefreshToken,
+    request, get, post, put, del, upload
+  };
 })();

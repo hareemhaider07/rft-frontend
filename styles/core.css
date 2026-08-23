@@ -25,6 +25,11 @@
     --success: #00c851;
     --green: #00c851;
     --green-light: #5ee7a0;
+    /* Aliases used by new pages */
+    --surface: #141414;
+    --surface-elevated: rgba(30,30,30,0.95);
+    --border-color: rgba(255,255,255,0.08);
+    --accent: #d4a843;
 }
 
 /* Base Styles */

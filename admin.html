@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFT Entertainment — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a22;
+      --surface2: #22222e;
+      --border: #2e2e3e;
+      --gold: #d4a843;
+      --gold2: #f0c060;
+      --text: #e8e8f0;
+      --muted: #888899;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --orange: #f97316;
+      --radius: 12px;
+      --sidebar: 240px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 0%, #2a1f0a 0%, var(--bg) 60%);
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .login-logo { text-align: center; margin-bottom: 32px; }
+    .login-logo h1 { font-size: 22px; font-weight: 700; color: var(--gold); }
+    .login-logo p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+    .form-group input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 14px;
+      outline: none; transition: border .2s;
+    }
+    .form-group input:focus { border-color: var(--gold); }
+    .btn-login {
+      width: 100%; background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600;
+      color: #1a1000; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-login:hover { opacity: .9; }
+    .login-error { color: var(--red); font-size: 13px; text-align: center; margin-top: 12px; display: none; }
+
+    /* ── SHELL ── */
+    #appShell { display: none; min-height: 100vh; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: var(--sidebar); height: 100vh;
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 100;
+      overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-brand h2 { font-size: 14px; font-weight: 700; color: var(--gold); }
+    .sidebar-brand p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 12px 0; }
+    .nav-section { padding: 8px 16px 4px; font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: .8px; text-transform: uppercase; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      color: var(--muted); font-size: 13px; cursor: pointer; border-radius: 8px;
+      margin: 1px 8px; transition: all .15s;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(212,168,67,.12); color: var(--gold); }
+    .nav-item i { font-size: 16px; width: 20px; }
+    .nav-badge {
+      margin-left: auto; background: var(--red); color: #fff;
+      border-radius: 10px; padding: 1px 7px; font-size: 10px; font-weight: 600;
+    }
+    .sidebar-footer {
+      padding: 16px; border-top: 1px solid var(--border);
+    }
+    .admin-info { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .admin-info span { color: var(--text); font-weight: 500; display: block; }
+    .btn-logout {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px; font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 6px; justify-content: center;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    .main-content {
+      margin-left: var(--sidebar); padding: 28px 32px;
+      min-height: 100vh;
+    }
+    .page-title {
+      font-size: 20px; font-weight: 700; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .page-title i { color: var(--gold); }
+
+    /* ── SECTIONS ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── STATS GRID ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 26px; font-weight: 700; }
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── TABLES ── */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .table-title { font-size: 14px; font-weight: 600; }
+    .table-actions { display: flex; gap: 8px; align-items: center; }
+    .search-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; color: var(--text);
+      font-size: 13px; outline: none; width: 200px;
+    }
+    .search-input:focus { border-color: var(--gold); }
+    .filter-select {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; color: var(--text);
+      font-size: 13px; outline: none; cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .5px;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 13px 16px; font-size: 13px; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-pending  { background: rgba(249,115,22,.15); color: var(--orange); }
+    .badge-completed{ background: rgba(34,197,94,.15);  color: var(--green); }
+    .badge-failed   { background: rgba(239,68,68,.15);  color: var(--red); }
+    .badge-verified { background: rgba(34,197,94,.15);  color: var(--green); }
+    .badge-rejected { background: rgba(239,68,68,.15);  color: var(--red); }
+    .badge-active   { background: rgba(59,130,246,.15); color: var(--blue); }
+    .badge-inactive { background: rgba(136,136,153,.15);color: var(--muted); }
+    .badge-vip0 { background: rgba(136,136,136,.15); color: #888; }
+    .badge-vip1 { background: rgba(205,127,50,.15);  color: #CD7F32; }
+    .badge-vip2 { background: rgba(192,192,192,.15); color: #C0C0C0; }
+    .badge-vip3 { background: rgba(255,215,0,.15);   color: #FFD700; }
+    .badge-vip4 { background: rgba(229,228,226,.15); color: #E5E4E2; }
+    .badge-vip5 { background: rgba(185,242,255,.15); color: #B9F2FF; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity .2s; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-approve  { background: rgba(34,197,94,.2);  color: var(--green); }
+    .btn-reject   { background: rgba(239,68,68,.2);  color: var(--red); }
+    .btn-process  { background: rgba(59,130,246,.2); color: var(--blue); }
+    .btn-view     { background: rgba(212,168,67,.15);color: var(--gold); }
+    .btn-edit     { background: rgba(249,115,22,.15);color: var(--orange); }
+    .btn-primary  { background: var(--gold); color: #1a1000; }
+    .btn-danger   { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+    /* ── PAGINATION ── */
+    .pagination { display: flex; gap: 6px; align-items: center; justify-content: flex-end; padding: 14px 16px; }
+    .page-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+      color: var(--text); transition: all .15s;
+    }
+    .page-btn:hover, .page-btn.active { border-color: var(--gold); color: var(--gold); }
+    .page-info { font-size: 12px; color: var(--muted); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; display: none;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; width: 100%; max-width: 500px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-close { cursor: pointer; color: var(--muted); font-size: 20px; }
+    .modal-close:hover { color: var(--text); }
+    .modal-field { margin-bottom: 14px; }
+    .modal-field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+    .modal-field input, .modal-field select, .modal-field textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none;
+    }
+    .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--gold); }
+    .modal-field textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .modal-info { background: var(--surface2); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+    .modal-info-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+    .modal-info-row:last-child { border-bottom: none; }
+    .modal-info-row span:first-child { color: var(--muted); }
+    .modal-info-row span:last-child { font-weight: 500; }
+    .img-preview { max-width: 100%; border-radius: 8px; margin-top: 8px; cursor: pointer; }
+
+    /* ── VIP CARDS ── */
+    .vip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .vip-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .vip-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .vip-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .vip-name { font-weight: 700; font-size: 15px; }
+    .vip-field { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .vip-field:last-child { border-bottom: none; }
+    .vip-field span:first-child { color: var(--muted); }
+    .vip-field span:last-child { font-weight: 500; }
+
+    /* ── TOAST ── */
+    #adminToast {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px; font-size: 13px;
+      transform: translateX(120%); transition: transform .3s;
+      max-width: 320px; display: flex; align-items: center; gap: 8px;
+    }
+    #adminToast.show { transform: translateX(0); }
+    #adminToast.success { border-color: var(--green); }
+    #adminToast.error   { border-color: var(--red); }
+
+    /* ── GRID helpers ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .loading { color: var(--muted); font-size: 13px; text-align: center; padding: 40px; }
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 40px; }
+    @media(max-width:1100px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <h1>⚡ RFT Admin</h1>
+      <p>Entertainment Platform Control Panel</p>
+    </div>
+    <div class="form-group">
+      <label>Username or Email</label>
+      <input type="text" id="adminUsername" placeholder="admin">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="adminPassword" placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') adminLogin()">
+    </div>
+    <button class="btn-login" onclick="adminLogin()">Sign In to Admin Panel</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP SHELL ═══════════════ -->
+<div id="appShell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>⚡ RFT Admin</h2>
+      <p>Control Panel</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <i class="ph-bold ph-squares-four"></i> Dashboard
+      </div>
+
+      <div class="nav-section">Finance</div>
+      <div class="nav-item" onclick="showSection('deposits')">
+        <i class="ph-bold ph-arrow-down-left"></i> Deposits
+        <span class="nav-badge" id="depositBadge">0</span>
+      </div>
+      <div class="nav-item" onclick="showSection('withdrawals')">
+        <i class="ph-bold ph-arrow-up-right"></i> Withdrawals
+        <span class="nav-badge" id="withdrawBadge">0</span>
+      </div>
+      <div class="nav-item" onclick="showSection('transactions')">
+        <i class="ph-bold ph-list-bullets"></i> All Transactions
+      </div>
+
+      <div class="nav-section">Users</div>
+      <div class="nav-item" onclick="showSection('users')">
+        <i class="ph-bold ph-users"></i> Users
+      </div>
+      <div class="nav-item" onclick="showSection('kyc')">
+        <i class="ph-bold ph-shield-check"></i> KYC
+        <span class="nav-badge" id="kycBadge">0</span>
+      </div>
+
+      <div class="nav-section">Platform</div>
+      <div class="nav-item" onclick="showSection('tasks')">
+        <i class="ph-bold ph-play-circle"></i> Tasks
+      </div>
+      <div class="nav-item" onclick="showSection('vip')">
+        <i class="ph-bold ph-crown"></i> VIP Levels
+      </div>
+      <div class="nav-item" onclick="showSection('paymentMethods')">
+        <i class="ph-bold ph-qr-code"></i> Payment Methods
+      </div>
+      <div class="nav-item" onclick="showSection('announcements')">
+        <i class="ph-bold ph-megaphone"></i> Announcements
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        Logged in as<span id="adminNameDisplay">Admin</span>
+      </div>
+      <button class="btn-logout" onclick="adminLogout()">
+        <i class="ph-bold ph-sign-out"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="section active" id="sec-dashboard">
+      <div class="page-title"><i class="ph-bold ph-squares-four"></i> Dashboard</div>
+      <div class="stats-grid" id="dashStats">
+        <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value blue" id="st-users">—</div></div>
+        <div class="stat-card"><div class="stat-label">Pending Deposits</div><div class="stat-value orange" id="st-dep">—</div></div>
+        <div class="stat-card"><div class="stat-label">Pending Withdrawals</div><div class="stat-value red" id="st-wit">—</div></div>
+        <div class="stat-card"><div class="stat-label">Pending KYC</div><div class="stat-value gold" id="st-kyc">—</div></div>
+        <div class="stat-card"><div class="stat-label">Total Deposited (USDT)</div><div class="stat-value green" id="st-tdep">—</div><div class="stat-sub" id="st-tdep-pkr"></div></div>
+        <div class="stat-card"><div class="stat-label">Total Withdrawn (USDT)</div><div class="stat-value red" id="st-twit">—</div><div class="stat-sub" id="st-twit-pkr"></div></div>
+        <div class="stat-card"><div class="stat-label">Active Users (7d)</div><div class="stat-value blue" id="st-active">—</div></div>
+        <div class="stat-card"><div class="stat-label">Today's Task Rewards</div><div class="stat-value gold" id="st-tasks">—</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">Recent Transactions</div></div>
+        <table><thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="recentTxBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── DEPOSITS ── -->
+    <div class="section" id="sec-deposits">
+      <div class="page-title"><i class="ph-bold ph-arrow-down-left"></i> Deposits</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Recharge Requests</div>
+          <div class="table-actions">
+            <select class="filter-select" id="depFilter" onchange="loadDeposits()">
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <table><thead><tr><th>User</th><th>Amount USDT</th><th>Amount PKR</th><th>Method</th><th>Screenshot</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="depositsBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+        <div class="pagination" id="depositsPag"></div>
+      </div>
+    </div>
+
+    <!-- ── WITHDRAWALS ── -->
+    <div class="section" id="sec-withdrawals">
+      <div class="page-title"><i class="ph-bold ph-arrow-up-right"></i> Withdrawals</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Withdrawal Requests</div>
+          <div class="table-actions">
+            <select class="filter-select" id="witFilter" onchange="loadWithdrawals()">
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <table><thead><tr><th>User</th><th>Amount USDT</th><th>Amount PKR</th><th>Method</th><th>Notes</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="withdrawalsBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+        <div class="pagination" id="withdrawalsPag"></div>
+      </div>
+    </div>
+
+    <!-- ── ALL TRANSACTIONS ── -->
+    <div class="section" id="sec-transactions">
+      <div class="page-title"><i class="ph-bold ph-list-bullets"></i> All Transactions</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Transactions</div>
+          <div class="table-actions">
+            <select class="filter-select" id="txType" onchange="loadAllTx()">
+              <option value="">All Types</option>
+              <option value="recharge">Recharge</option>
+              <option value="withdrawal">Withdrawal</option>
+              <option value="task_reward">Task Reward</option>
+              <option value="referral_commission">Referral Commission</option>
+              <option value="referral_bonus">Referral Bonus</option>
+              <option value="manual_adjustment">Manual Adjustment</option>
+            </select>
+            <select class="filter-select" id="txStatus" onchange="loadAllTx()">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+            </select>
+          </div>
+        </div>
+        <table><thead><tr><th>User</th><th>Type</th><th>Amount USDT</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="allTxBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
+        <div class="pagination" id="allTxPag"></div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="section" id="sec-users">
+      <div class="page-title"><i class="ph-bold ph-users"></i> Users</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">All Users</div>
+          <div class="table-actions">
+            <input class="search-input" id="userSearch" placeholder="Search name / email / phone…"
+                   oninput="debSearch(this.value)">
+            <select class="filter-select" id="userStatus" onchange="loadUsers()">
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <table><thead><tr><th>Name</th><th>Phone</th><th>VIP</th><th>Balance</th><th>KYC</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="usersBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+        <div class="pagination" id="usersPag"></div>
+      </div>
+    </div>
+
+    <!-- ── KYC ── -->
+    <div class="section" id="sec-kyc">
+      <div class="page-title"><i class="ph-bold ph-shield-check"></i> KYC Verification</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">KYC Documents</div>
+          <div class="table-actions">
+            <select class="filter-select" id="kycFilter" onchange="loadKyc()">
+              <option value="pending">Pending</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <table><thead><tr><th>User</th><th>Doc Type</th><th>Country</th><th>Doc Number</th><th>Images</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody id="kycBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+        <div class="pagination" id="kycPag"></div>
+      </div>
+    </div>
+
+    <!-- ── TASKS ── -->
+    <div class="section" id="sec-tasks">
+      <div class="page-title"><i class="ph-bold ph-play-circle"></i> Tasks</div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">All Tasks</div>
+          <div class="table-actions">
+            <button class="btn btn-primary" onclick="openAddTask()"><i class="ph-bold ph-plus"></i> Add Task</button>
+          </div>
+        </div>
+        <table><thead><tr><th>Title</th><th>Type</th><th>Reward USDT</th><th>Duration</th><th>Min VIP</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="tasksBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── VIP ── -->
+    <div class="section" id="sec-vip">
+      <div class="page-title"><i class="ph-bold ph-crown"></i> VIP Levels</div>
+      <div class="vip-grid" id="vipGrid"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ── PAYMENT METHODS ── -->
+    <div class="section" id="sec-paymentMethods">
+      <div class="page-title"><i class="ph-bold ph-qr-code"></i> Payment Methods</div>
+      <div class="vip-grid" id="pmGrid"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ── ANNOUNCEMENTS ── -->
+    <div class="section" id="sec-announcements">
+      <div class="page-title"><i class="ph-bold ph-megaphone"></i> Announcements</div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openAddAnnouncement()"><i class="ph-bold ph-plus"></i> New Announcement</button>
+      </div>
+      <div class="table-card">
+        <table><thead><tr><th>Title</th><th>Type</th><th>Target VIP</th><th>Active</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="annBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Action Modal (approve/reject/process) -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal">
+    <div class="modal-title"><span id="actionModalTitle">Action</span><span class="modal-close" onclick="closeModal('actionModal')">✕</span></div>
+    <div class="modal-info" id="actionModalInfo"></div>
+    <div class="modal-field">
+      <label>Admin Note (optional)</label>
+      <textarea id="actionNote" placeholder="Add a note…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('actionModal')">Cancel</button>
+      <button class="btn btn-primary" id="actionConfirmBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Detail Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title"><span>User Details</span><span class="modal-close" onclick="closeModal('userModal')">✕</span></div>
+    <div id="userModalContent"></div>
+    <div class="modal-actions" id="userModalActions"></div>
+  </div>
+</div>
+
+<!-- Balance Modal -->
+<div class="modal-overlay" id="balanceModal">
+  <div class="modal">
+    <div class="modal-title"><span id="balModalTitle">Adjust Balance</span><span class="modal-close" onclick="closeModal('balanceModal')">✕</span></div>
+    <input type="hidden" id="balUserId">
+    <div class="modal-field"><label>Action</label>
+      <select id="balAction"><option value="add">Add Balance</option><option value="deduct">Deduct Balance</option></select>
+    </div>
+    <div class="modal-field"><label>Amount (USDT)</label><input type="number" id="balAmount" placeholder="0.00" step="0.01"></div>
+    <div class="modal-field"><label>Note</label><input type="text" id="balNote" placeholder="Reason…"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('balanceModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitBalance()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-title"><span id="taskModalTitle">Add Task</span><span class="modal-close" onclick="closeModal('taskModal')">✕</span></div>
+    <input type="hidden" id="taskModalId">
+    <div class="modal-field"><label>Title *</label><input type="text" id="tmTitle" placeholder="Task title"></div>
+    <div class="modal-field"><label>Description</label><textarea id="tmDesc" placeholder="Description…"></textarea></div>
+    <div class="modal-field"><label>Type *</label>
+      <select id="tmType">
+        <option value="youtube">YouTube</option><option value="tiktok">TikTok</option>
+        <option value="instagram">Instagram</option><option value="facebook">Facebook</option>
+        <option value="twitter">Twitter / X</option><option value="other">Other</option>
+      </select>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>Reward (USDT) *</label><input type="number" id="tmReward" step="0.0001" placeholder="0.10"></div>
+      <div class="modal-field"><label>Duration (seconds)</label><input type="number" id="tmDuration" placeholder="30"></div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>Min VIP Level</label><input type="number" id="tmVip" value="0" min="0" max="5"></div>
+      <div class="modal-field"><label>Order Index</label><input type="number" id="tmOrder" value="0"></div>
+    </div>
+    <div class="modal-field"><label>Thumbnail URL</label><input type="url" id="tmThumb" placeholder="https://…"></div>
+    <div class="modal-field"><label>Video URL</label><input type="url" id="tmVideo" placeholder="https://…"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('taskModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIP Edit Modal -->
+<div class="modal-overlay" id="vipModal">
+  <div class="modal">
+    <div class="modal-title"><span id="vipModalTitle">Edit VIP Level</span><span class="modal-close" onclick="closeModal('vipModal')">✕</span></div>
+    <input type="hidden" id="vipModalLevel">
+    <div class="two-col">
+      <div class="modal-field"><label>Required Deposit (USDT)</label><input type="number" id="vmDeposit" step="0.01"></div>
+      <div class="modal-field"><label>Daily Task Limit (0=unlimited)</label><input type="number" id="vmLimit"></div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>Task Reward (USDT)</label><input type="number" id="vmReward" step="0.0001"></div>
+      <div class="modal-field"><label>Referral Bonus (USDT)</label><input type="number" id="vmBonus" step="0.01"></div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>L1 Commission Rate (0.10 = 10%)</label><input type="number" id="vmL1" step="0.01"></div>
+      <div class="modal-field"><label>L2 Commission Rate</label><input type="number" id="vmL2" step="0.01"></div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>L3 Commission Rate</label><input type="number" id="vmL3" step="0.01"></div>
+      <div class="modal-field"><label>Min Withdraw (USDT)</label><input type="number" id="vmMinWit" step="0.01"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('vipModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitVip()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Method Edit Modal -->
+<div class="modal-overlay" id="pmModal">
+  <div class="modal">
+    <div class="modal-title"><span id="pmModalTitle">Edit Payment Method</span><span class="modal-close" onclick="closeModal('pmModal')">✕</span></div>
+    <input type="hidden" id="pmModalId">
+    <div class="modal-field"><label>Display Name</label><input type="text" id="pmName"></div>
+    <div class="modal-field"><label>Account Name</label><input type="text" id="pmAccName"></div>
+    <div class="modal-field"><label>Account Number / ID</label><input type="text" id="pmAccNum"></div>
+    <div class="modal-field"><label>QR Code Image URL</label><input type="url" id="pmQr" placeholder="https://…"></div>
+    <div class="modal-field"><label>Instructions</label><textarea id="pmInstructions"></textarea></div>
+    <div class="modal-field"><label>Active</label>
+      <select id="pmActive"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('pmModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPm()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Announcement Modal -->
+<div class="modal-overlay" id="annModal">
+  <div class="modal">
+    <div class="modal-title"><span>New Announcement</span><span class="modal-close" onclick="closeModal('annModal')">✕</span></div>
+    <div class="modal-field"><label>Title *</label><input type="text" id="annTitle" placeholder="Announcement title"></div>
+    <div class="modal-field"><label>Content *</label><textarea id="annContent" placeholder="Message content…"></textarea></div>
+    <div class="two-col">
+      <div class="modal-field"><label>Type</label>
+        <select id="annType">
+          <option value="info">Info</option><option value="success">Success</option>
+          <option value="warning">Warning</option><option value="error">Error</option>
+        </select>
+      </div>
+      <div class="modal-field"><label>Target VIP (-1 = all)</label><input type="number" id="annVip" value="-1" min="-1" max="5"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('annModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAnnouncement()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="adminToast"></div>
+
+<!-- ═══════════════ SCRIPT ═══════════════ -->
+<script>
+const API = 'https://rft-backend-production.up.railway.app/api';
+let adminToken = localStorage.getItem('rft_admin_token') || '';
+let currentSection = 'dashboard';
+let depPage = 1, witPage = 1, txPage = 1, usersPage = 1, kycPage = 1;
+let actionCallback = null;
+let searchTimer = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  if (adminToken) {
+    showApp();
+  }
+};
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+  const un = localStorage.getItem('rft_admin_username') || 'Admin';
+  document.getElementById('adminNameDisplay').textContent = un;
+  showSection('dashboard');
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function adminLogin() {
+  const username = document.getElementById('adminUsername').value.trim();
+  const password = document.getElementById('adminPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!username || !password) { errEl.textContent = 'Enter username and password'; errEl.style.display = 'block'; return; }
+
+  try {
+    const res = await apiFetch('/admin/auth/login', 'POST', { username, password }, false);
+    if (res.success) {
+      adminToken = res.data.access_token;
+      localStorage.setItem('rft_admin_token', adminToken);
+      localStorage.setItem('rft_admin_username', res.data.admin.username);
+      showApp();
+    } else {
+      errEl.textContent = res.message || 'Login failed';
+      errEl.style.display = 'block';
+    }
+  } catch (e) {
+    errEl.textContent = 'Server error. Check your connection.';
+    errEl.style.display = 'block';
+  }
+}
+
+function adminLogout() {
+  adminToken = '';
+  localStorage.removeItem('rft_admin_token');
+  localStorage.removeItem('rft_admin_username');
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// ── API helper ────────────────────────────────────────────────────────────────
+async function apiFetch(endpoint, method = 'GET', body = null, auth = true) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth) headers['Authorization'] = `Bearer ${adminToken}`;
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + endpoint, opts);
+  return r.json();
+}
+
+// ── Section nav ───────────────────────────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`sec-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(`'${name}'`)) n.classList.add('active');
+  });
+  currentSection = name;
+  const loaders = {
+    dashboard: loadDashboard, deposits: loadDeposits, withdrawals: loadWithdrawals,
+    transactions: loadAllTx, users: loadUsers, kyc: loadKyc,
+    tasks: loadTasks, vip: loadVip, paymentMethods: loadPm, announcements: loadAnnouncements
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const t = document.getElementById('adminToast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  setTimeout(() => t.className = '', 3200);
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-PK', { day:'2-digit', month:'short', year:'numeric' }) : '—'; }
+function fmtBadge(status) {
+  const map = { pending:'pending', completed:'completed', failed:'failed', verified:'verified',
+                rejected:'rejected', active:'active', inactive:'inactive' };
+  return `<span class="badge badge-${map[status]||'pending'}">${status||'—'}</span>`;
+}
+function fmtVip(level) { return `<span class="badge badge-vip${level||0}">VIP ${level||0}</span>`; }
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const d = await apiFetch('/admin/dashboard');
+  if (!d.success) return;
+  const s = d.data.stats;
+  document.getElementById('st-users').textContent  = s.total_users;
+  document.getElementById('st-dep').textContent    = s.pending_deposits;
+  document.getElementById('st-wit').textContent    = s.pending_withdrawals;
+  document.getElementById('st-kyc').textContent    = s.pending_kyc;
+  document.getElementById('st-tdep').textContent   = s.total_deposited_usdt + ' USDT';
+  document.getElementById('st-tdep-pkr').textContent = 'PKR ' + Number(s.total_deposited_pkr).toLocaleString();
+  document.getElementById('st-twit').textContent   = s.total_withdrawn_usdt + ' USDT';
+  document.getElementById('st-twit-pkr').textContent = 'PKR ' + Number(s.total_withdrawn_pkr).toLocaleString();
+  document.getElementById('st-active').textContent = s.active_users_7d;
+  document.getElementById('st-tasks').textContent  = s.today_task_rewards + ' USDT';
+  // badges
+  document.getElementById('depositBadge').textContent  = s.pending_deposits;
+  document.getElementById('withdrawBadge').textContent = s.pending_withdrawals;
+  document.getElementById('kycBadge').textContent      = s.pending_kyc;
+
+  const body = document.getElementById('recentTxBody');
+  body.innerHTML = d.data.recent_transactions.map(t => `
+    <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
+    <td>${t.type}</td><td>${t.amount_usdt} USDT</td>
+    <td>${fmtBadge(t.status)}</td><td>${fmtDate(t.created_at)}</td></tr>
+  `).join('') || '<tr><td colspan="5" class="empty">No transactions</td></tr>';
+}
+
+// ── Deposits ──────────────────────────────────────────────────────────────────
+async function loadDeposits(page = 1) {
+  depPage = page;
+  const status = document.getElementById('depFilter').value;
+  const d = await apiFetch(`/admin/transactions?type=recharge&status=${status}&page=${page}&limit=15`);
+  if (!d.success) return;
+  const body = document.getElementById('depositsBody');
+  body.innerHTML = d.data.transactions.map(t => `
+    <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
+    <td><strong>${t.amount_usdt}</strong></td>
+    <td>${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : '—'}</td>
+    <td>${t.payment_method||'—'}</td>
+    <td>${t.screenshot_url
+      ? `<a href="https://rft-backend-production.up.railway.app${t.screenshot_url}" target="_blank" class="btn btn-view btn-sm">View</a>`
+      : '<span style="color:var(--muted)">None</span>'}</td>
+    <td>${fmtBadge(t.status)}</td>
+    <td>${fmtDate(t.created_at)}</td>
+    <td>${t.status === 'pending' ? `
+      <button class="btn btn-approve btn-sm" onclick="openAction('approve','${t.id}','Approve deposit of ${t.amount_usdt} USDT from ${t.name}?')">Approve</button>
+      <button class="btn btn-reject  btn-sm" onclick="openAction('reject', '${t.id}','Reject deposit of ${t.amount_usdt} USDT?')">Reject</button>
+    ` : (t.admin_note ? `<small style="color:var(--muted)">${t.admin_note}</small>` : '—')}</td></tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No deposits</td></tr>';
+  renderPag('depositsPag', d.data.pagination, loadDeposits);
+}
+
+// ── Withdrawals ───────────────────────────────────────────────────────────────
+async function loadWithdrawals(page = 1) {
+  witPage = page;
+  const status = document.getElementById('witFilter').value;
+  const d = await apiFetch(`/admin/transactions?type=withdrawal&status=${status}&page=${page}&limit=15`);
+  if (!d.success) return;
+  const body = document.getElementById('withdrawalsBody');
+  body.innerHTML = d.data.transactions.map(t => `
+    <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
+    <td><strong>${t.amount_usdt}</strong></td>
+    <td>${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : '—'}</td>
+    <td>${t.payment_method||'—'}</td>
+    <td><small style="color:var(--muted)">${(t.notes||'').slice(0,40)}</small></td>
+    <td>${fmtBadge(t.status)}</td>
+    <td>${fmtDate(t.created_at)}</td>
+    <td>${t.status === 'pending' ? `
+      <button class="btn btn-approve btn-sm" onclick="openAction('process','${t.id}','Process withdrawal of ${t.amount_usdt} USDT to ${t.name}?')">Process</button>
+      <button class="btn btn-reject  btn-sm" onclick="openAction('refund', '${t.id}','Refund/reject withdrawal of ${t.amount_usdt} USDT?')">Refund</button>
+    ` : (t.admin_note ? `<small style="color:var(--muted)">${t.admin_note}</small>` : '—')}</td></tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No withdrawals</td></tr>';
+  renderPag('withdrawalsPag', d.data.pagination, loadWithdrawals);
+}
+
+// ── All Transactions ──────────────────────────────────────────────────────────
+async function loadAllTx(page = 1) {
+  txPage = page;
+  const type   = document.getElementById('txType').value;
+  const status = document.getElementById('txStatus').value;
+  const d = await apiFetch(`/admin/transactions?type=${type}&status=${status}&page=${page}&limit=20`);
+  if (!d.success) return;
+  const body = document.getElementById('allTxBody');
+  body.innerHTML = d.data.transactions.map(t => `
+    <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.email||''}</small></td>
+    <td><span class="badge badge-pending">${t.type}</span></td>
+    <td>${t.amount_usdt} USDT</td>
+    <td>${t.payment_method||'—'}</td>
+    <td>${fmtBadge(t.status)}</td>
+    <td>${fmtDate(t.created_at)}</td></tr>
+  `).join('') || '<tr><td colspan="6" class="empty">No transactions</td></tr>';
+  renderPag('allTxPag', d.data.pagination, loadAllTx);
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+async function loadUsers(page = 1) {
+  usersPage = page;
+  const search = document.getElementById('userSearch').value;
+  const status = document.getElementById('userStatus').value;
+  const d = await apiFetch(`/admin/users?search=${encodeURIComponent(search)}&status=${status}&page=${page}&limit=20`);
+  if (!d.success) return;
+  const body = document.getElementById('usersBody');
+  body.innerHTML = d.data.users.map(u => `
+    <tr><td>${u.name||'—'}<br><small style="color:var(--muted)">${u.email||''}</small></td>
+    <td>${u.phone||'—'}</td>
+    <td>${fmtVip(u.vip_level)}</td>
+    <td>${u.balance_usdt} USDT</td>
+    <td>${fmtBadge(u.kyc_status)}</td>
+    <td>${u.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+    <td>${fmtDate(u.created_at)}</td>
+    <td>
+      <button class="btn btn-view btn-sm" onclick="viewUser('${u.id}')">View</button>
+      <button class="btn btn-edit btn-sm" onclick="openBalance('${u.id}','${u.name||'User'}')">Balance</button>
+    </td></tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No users</td></tr>';
+  renderPag('usersPag', d.data.pagination, loadUsers);
+}
+
+function debSearch(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadUsers(1), 400);
+}
+
+async function viewUser(id) {
+  const d = await apiFetch(`/admin/users/${id}`);
+  if (!d.success) return;
+  const u = d.data;
+  document.getElementById('userModalContent').innerHTML = `
+    <div class="modal-info">
+      <div class="modal-info-row"><span>Name</span><span>${u.name||'—'}</span></div>
+      <div class="modal-info-row"><span>Email</span><span>${u.email||'—'}</span></div>
+      <div class="modal-info-row"><span>Phone</span><span>${u.phone||'—'}</span></div>
+      <div class="modal-info-row"><span>VIP Level</span><span>${fmtVip(u.vip_level)}</span></div>
+      <div class="modal-info-row"><span>Balance</span><span>${u.balance_usdt} USDT</span></div>
+      <div class="modal-info-row"><span>KYC Status</span><span>${fmtBadge(u.kyc_status)}</span></div>
+      <div class="modal-info-row"><span>Referral Code</span><span>${u.referral_code||'—'}</span></div>
+      <div class="modal-info-row"><span>Total Deposited</span><span>${u.total_deposited} USDT</span></div>
+      <div class="modal-info-row"><span>Total Withdrawn</span><span>${u.total_withdrawn} USDT</span></div>
+      <div class="modal-info-row"><span>Total Referrals</span><span>${u.total_referrals}</span></div>
+      <div class="modal-info-row"><span>Joined</span><span>${fmtDate(u.created_at)}</span></div>
+    </div>
+  `;
+  document.getElementById('userModalActions').innerHTML = `
+    <button class="btn btn-danger" onclick="toggleUser('${u.id}', ${!u.is_active})">
+      ${u.is_active ? 'Deactivate' : 'Activate'}
+    </button>
+    <button class="btn btn-edit" onclick="closeModal('userModal');openBalance('${u.id}','${u.name||'User'}')">Adjust Balance</button>
+    <button class="btn btn-danger" onclick="closeModal('userModal')">Close</button>
+  `;
+  openModal('userModal');
+}
+
+async function toggleUser(id, activate) {
+  await apiFetch(`/admin/users/${id}`, 'PUT', { is_active: activate });
+  toast(activate ? 'User activated' : 'User deactivated', 'success');
+  closeModal('userModal');
+  loadUsers(usersPage);
+}
+
+function openBalance(id, name) {
+  document.getElementById('balUserId').value = id;
+  document.getElementById('balModalTitle').textContent = `Adjust Balance — ${name}`;
+  document.getElementById('balAmount').value = '';
+  document.getElementById('balNote').value = '';
+  openModal('balanceModal');
+}
+
+async function submitBalance() {
+  const id     = document.getElementById('balUserId').value;
+  const action = document.getElementById('balAction').value;
+  const amount = document.getElementById('balAmount').value;
+  const note   = document.getElementById('balNote').value;
+  if (!amount || amount <= 0) { toast('Enter a valid amount', 'error'); return; }
+  const d = await apiFetch(`/admin/users/${id}/balance`, 'POST', { amount_usdt: amount, action, note });
+  if (d.success) { toast('Balance adjusted', 'success'); closeModal('balanceModal'); loadUsers(usersPage); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+// ── KYC ───────────────────────────────────────────────────────────────────────
+async function loadKyc(page = 1) {
+  kycPage = page;
+  const status = document.getElementById('kycFilter').value;
+  const d = await apiFetch(`/admin/kyc?status=${status}&page=${page}&limit=15`);
+  if (!d.success) return;
+  const body = document.getElementById('kycBody');
+  const BE = 'https://rft-backend-production.up.railway.app';
+  body.innerHTML = d.data.documents.map(k => `
+    <tr><td>${k.name||'—'}<br><small style="color:var(--muted)">${k.phone||''}</small></td>
+    <td>${k.document_type}</td><td>${k.issuing_country}</td><td>${k.document_number}</td>
+    <td>
+      ${k.front_image_url ? `<a href="${BE}${k.front_image_url}" target="_blank" class="btn btn-view btn-sm">Front</a>` : ''}
+      ${k.back_image_url  ? `<a href="${BE}${k.back_image_url}"  target="_blank" class="btn btn-view btn-sm">Back</a>`  : ''}
+      ${k.selfie_image_url? `<a href="${BE}${k.selfie_image_url}"target="_blank" class="btn btn-view btn-sm">Selfie</a>`: ''}
+    </td>
+    <td>${fmtBadge(k.verification_status)}</td>
+    <td>${fmtDate(k.submitted_at)}</td>
+    <td>${k.verification_status === 'pending' ? `
+      <button class="btn btn-approve btn-sm" onclick="openAction('kyc-approve','${k.id}','Approve KYC for ${k.name}?')">Approve</button>
+      <button class="btn btn-reject  btn-sm" onclick="openAction('kyc-reject', '${k.id}','Reject KYC for ${k.name}?')">Reject</button>
+    ` : '—'}</td></tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No documents</td></tr>';
+  renderPag('kycPag', d.data.pagination, loadKyc);
+}
+
+// ── Action modal ──────────────────────────────────────────────────────────────
+function openAction(type, id, desc) {
+  document.getElementById('actionModalTitle').textContent = type.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase());
+  document.getElementById('actionModalInfo').innerHTML = `<p style="font-size:14px">${desc}</p>`;
+  document.getElementById('actionNote').value = '';
+  const btn = document.getElementById('actionConfirmBtn');
+  btn.className = 'btn ' + (['approve','process','kyc-approve'].includes(type) ? 'btn-approve' : 'btn-danger');
+  actionCallback = async () => {
+    const note = document.getElementById('actionNote').value;
+    let ep, method = 'POST', body = { admin_note: note };
+    if (type === 'approve')     ep = `/admin/transactions/${id}/approve`;
+    if (type === 'reject')      ep = `/admin/transactions/${id}/reject`;
+    if (type === 'process')     ep = `/admin/transactions/${id}/process`;
+    if (type === 'refund')      ep = `/admin/transactions/${id}/refund`;
+    if (type === 'kyc-approve') { ep = `/admin/kyc/${id}/approve`; body = {}; }
+    if (type === 'kyc-reject')  { ep = `/admin/kyc/${id}/reject`;  body = { reason: note }; }
+    const d = await apiFetch(ep, method, body);
+    if (d.success) {
+      toast(d.message || 'Done', 'success');
+      closeModal('actionModal');
+      if (['approve','reject'].includes(type)) loadDeposits(depPage);
+      if (['process','refund'].includes(type)) loadWithdrawals(witPage);
+      if (type.startsWith('kyc'))              loadKyc(kycPage);
+      loadDashboard();
+    } else toast(d.message || 'Failed', 'error');
+  };
+  btn.onclick = actionCallback;
+  openModal('actionModal');
+}
+
+// ── Tasks ─────────────────────────────────────────────────────────────────────
+async function loadTasks() {
+  const d = await apiFetch('/admin/tasks');
+  if (!d.success) return;
+  const body = document.getElementById('tasksBody');
+  body.innerHTML = d.data.map(t => `
+    <tr><td>${t.title}</td><td>${t.task_type}</td>
+    <td>${t.reward_usdt} USDT</td><td>${t.duration_seconds}s</td>
+    <td>${fmtVip(t.min_vip_level)}</td><td>${t.order_index}</td>
+    <td>${t.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+    <td>
+      <button class="btn btn-edit btn-sm" onclick="openEditTask(${JSON.stringify(t).replace(/"/g,'&quot;')})">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deactivateTask('${t.id}')">Disable</button>
+    </td></tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No tasks</td></tr>';
+}
+
+function openAddTask() {
+  document.getElementById('taskModalTitle').textContent = 'Add Task';
+  document.getElementById('taskModalId').value = '';
+  ['tmTitle','tmDesc','tmThumb','tmVideo'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tmType').value = 'youtube';
+  document.getElementById('tmReward').value = '0.10';
+  document.getElementById('tmDuration').value = '30';
+  document.getElementById('tmVip').value = '0';
+  document.getElementById('tmOrder').value = '0';
+  openModal('taskModal');
+}
+
+function openEditTask(t) {
+  document.getElementById('taskModalTitle').textContent = 'Edit Task';
+  document.getElementById('taskModalId').value    = t.id;
+  document.getElementById('tmTitle').value        = t.title;
+  document.getElementById('tmDesc').value         = t.description || '';
+  document.getElementById('tmType').value         = t.task_type;
+  document.getElementById('tmReward').value       = t.reward_usdt;
+  document.getElementById('tmDuration').value     = t.duration_seconds;
+  document.getElementById('tmVip').value          = t.min_vip_level;
+  document.getElementById('tmOrder').value        = t.order_index;
+  document.getElementById('tmThumb').value        = t.thumbnail_url || '';
+  document.getElementById('tmVideo').value        = t.video_url || '';
+  openModal('taskModal');
+}
+
+async function submitTask() {
+  const id = document.getElementById('taskModalId').value;
+  const body = {
+    title: document.getElementById('tmTitle').value,
+    description: document.getElementById('tmDesc').value,
+    task_type: document.getElementById('tmType').value,
+    reward_usdt: document.getElementById('tmReward').value,
+    duration_seconds: parseInt(document.getElementById('tmDuration').value),
+    min_vip_level: parseInt(document.getElementById('tmVip').value),
+    order_index: parseInt(document.getElementById('tmOrder').value),
+    thumbnail_url: document.getElementById('tmThumb').value,
+    video_url: document.getElementById('tmVideo').value
+  };
+  if (!body.title || !body.task_type || !body.reward_usdt) { toast('Fill required fields', 'error'); return; }
+  const d = id
+    ? await apiFetch(`/admin/tasks/${id}`, 'PUT', body)
+    : await apiFetch('/admin/tasks', 'POST', body);
+  if (d.success) { toast(id ? 'Task updated' : 'Task created', 'success'); closeModal('taskModal'); loadTasks(); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+async function deactivateTask(id) {
+  if (!confirm('Disable this task?')) return;
+  const d = await apiFetch(`/admin/tasks/${id}`, 'DELETE');
+  if (d.success) { toast('Task disabled', 'success'); loadTasks(); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+// ── VIP ───────────────────────────────────────────────────────────────────────
+async function loadVip() {
+  const d = await apiFetch('/admin/vip-levels');
+  if (!d.success) return;
+  const colors = ['#888','#CD7F32','#C0C0C0','#FFD700','#E5E4E2','#B9F2FF'];
+  document.getElementById('vipGrid').innerHTML = d.data.map(v => `
+    <div class="vip-card">
+      <div class="vip-card-head">
+        <div class="vip-badge" style="background:${colors[v.level]}22;color:${colors[v.level]}">
+          <i class="ph-bold ${v.badge_icon}"></i>
+        </div>
+        <div><div class="vip-name">${v.name}</div></div>
+        <button class="btn btn-edit btn-sm" style="margin-left:auto" onclick="openEditVip(${JSON.stringify(v).replace(/"/g,'&quot;')})">Edit</button>
+      </div>
+      <div class="vip-field"><span>Required Deposit</span><span>${v.required_deposit_usdt} USDT</span></div>
+      <div class="vip-field"><span>Daily Tasks</span><span>${v.daily_task_limit || 'Unlimited'}</span></div>
+      <div class="vip-field"><span>Task Reward</span><span>${v.task_reward_usdt} USDT</span></div>
+      <div class="vip-field"><span>Referral Bonus</span><span>${v.referral_bonus_usdt} USDT</span></div>
+      <div class="vip-field"><span>L1 Commission</span><span>${(v.level1_commission_rate*100).toFixed(0)}%</span></div>
+      <div class="vip-field"><span>L2 Commission</span><span>${(v.level2_commission_rate*100).toFixed(0)}%</span></div>
+      <div class="vip-field"><span>L3 Commission</span><span>${(v.level3_commission_rate*100).toFixed(0)}%</span></div>
+      <div class="vip-field"><span>Min Withdraw</span><span>${v.min_withdraw_usdt} USDT</span></div>
+    </div>
+  `).join('');
+}
+
+function openEditVip(v) {
+  document.getElementById('vipModalTitle').textContent = `Edit ${v.name}`;
+  document.getElementById('vipModalLevel').value = v.level;
+  document.getElementById('vmDeposit').value = v.required_deposit_usdt;
+  document.getElementById('vmLimit').value   = v.daily_task_limit;
+  document.getElementById('vmReward').value  = v.task_reward_usdt;
+  document.getElementById('vmBonus').value   = v.referral_bonus_usdt;
+  document.getElementById('vmL1').value      = v.level1_commission_rate;
+  document.getElementById('vmL2').value      = v.level2_commission_rate;
+  document.getElementById('vmL3').value      = v.level3_commission_rate;
+  document.getElementById('vmMinWit').value  = v.min_withdraw_usdt;
+  openModal('vipModal');
+}
+
+async function submitVip() {
+  const level = document.getElementById('vipModalLevel').value;
+  const body = {
+    required_deposit_usdt:   parseFloat(document.getElementById('vmDeposit').value),
+    daily_task_limit:        parseInt(document.getElementById('vmLimit').value),
+    task_reward_usdt:        parseFloat(document.getElementById('vmReward').value),
+    referral_bonus_usdt:     parseFloat(document.getElementById('vmBonus').value),
+    level1_commission_rate:  parseFloat(document.getElementById('vmL1').value),
+    level2_commission_rate:  parseFloat(document.getElementById('vmL2').value),
+    level3_commission_rate:  parseFloat(document.getElementById('vmL3').value),
+    min_withdraw_usdt:       parseFloat(document.getElementById('vmMinWit').value)
+  };
+  const d = await apiFetch(`/admin/vip-levels/${level}`, 'PUT', body);
+  if (d.success) { toast('VIP level updated', 'success'); closeModal('vipModal'); loadVip(); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+// ── Payment Methods ───────────────────────────────────────────────────────────
+async function loadPm() {
+  const d = await apiFetch('/admin/payment-methods');
+  if (!d.success) return;
+  const BE = 'https://rft-backend-production.up.railway.app';
+  document.getElementById('pmGrid').innerHTML = d.data.map(p => `
+    <div class="vip-card">
+      <div class="vip-card-head">
+        <div class="vip-badge" style="background:${p.color||'#333'}22;color:${p.color||'#888'};font-size:20px">${p.icon||'💳'}</div>
+        <div><div class="vip-name">${p.name}</div><small style="color:var(--muted)">${p.identifier}</small></div>
+        <button class="btn btn-edit btn-sm" style="margin-left:auto" onclick="openEditPm(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button>
+      </div>
+      <div class="vip-field"><span>Account Name</span><span>${p.account_name||'—'}</span></div>
+      <div class="vip-field"><span>Account Number</span><span>${p.account_number||'—'}</span></div>
+      <div class="vip-field"><span>QR Code</span><span>${p.qr_code_url
+        ? `<a href="${p.qr_code_url}" target="_blank" style="color:var(--gold)">View QR</a>` : '—'}</span></div>
+      <div class="vip-field"><span>Status</span><span>${p.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</span></div>
+    </div>
+  `).join('');
+}
+
+function openEditPm(p) {
+  document.getElementById('pmModalTitle').textContent = `Edit — ${p.name}`;
+  document.getElementById('pmModalId').value     = p.id;
+  document.getElementById('pmName').value        = p.name;
+  document.getElementById('pmAccName').value     = p.account_name || '';
+  document.getElementById('pmAccNum').value      = p.account_number || '';
+  document.getElementById('pmQr').value          = p.qr_code_url || '';
+  document.getElementById('pmInstructions').value= p.instructions || '';
+  document.getElementById('pmActive').value      = p.is_active ? 'true' : 'false';
+  openModal('pmModal');
+}
+
+async function submitPm() {
+  const id = document.getElementById('pmModalId').value;
+  const body = {
+    name:           document.getElementById('pmName').value,
+    account_name:   document.getElementById('pmAccName').value,
+    account_number: document.getElementById('pmAccNum').value,
+    qr_code_url:    document.getElementById('pmQr').value,
+    instructions:   document.getElementById('pmInstructions').value,
+    is_active:      document.getElementById('pmActive').value === 'true'
+  };
+  const d = await apiFetch(`/admin/payment-methods/${id}`, 'PUT', body);
+  if (d.success) { toast('Payment method updated', 'success'); closeModal('pmModal'); loadPm(); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+// ── Announcements ─────────────────────────────────────────────────────────────
+async function loadAnnouncements() {
+  const d = await apiFetch('/admin/announcements');
+  if (!d.success) return;
+  const body = document.getElementById('annBody');
+  body.innerHTML = d.data.map(a => `
+    <tr><td><strong>${a.title}</strong><br><small style="color:var(--muted)">${(a.content||'').slice(0,60)}…</small></td>
+    <td><span class="badge badge-pending">${a.type}</span></td>
+    <td>${a.target_vip_level === -1 ? 'All' : `VIP ${a.target_vip_level}+`}</td>
+    <td>${a.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+    <td>${fmtDate(a.created_at)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="toggleAnn('${a.id}',${!a.is_active})">${a.is_active ? 'Disable' : 'Enable'}</button></td></tr>
+  `).join('') || '<tr><td colspan="6" class="empty">No announcements</td></tr>';
+}
+
+function openAddAnnouncement() {
+  ['annTitle','annContent'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('annType').value = 'info';
+  document.getElementById('annVip').value  = '-1';
+  openModal('annModal');
+}
+
+async function submitAnnouncement() {
+  const body = {
+    title:            document.getElementById('annTitle').value,
+    content:          document.getElementById('annContent').value,
+    type:             document.getElementById('annType').value,
+    target_vip_level: parseInt(document.getElementById('annVip').value)
+  };
+  if (!body.title || !body.content) { toast('Title and content required', 'error'); return; }
+  const d = await apiFetch('/admin/announcements', 'POST', body);
+  if (d.success) { toast('Announcement sent to users', 'success'); closeModal('annModal'); loadAnnouncements(); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+async function toggleAnn(id, active) {
+  await apiFetch(`/admin/announcements/${id}`, 'PUT', { is_active: active });
+  toast(active ? 'Announcement enabled' : 'Announcement disabled', 'success');
+  loadAnnouncements();
+}
+
+// ── Pagination helper ─────────────────────────────────────────────────────────
+function renderPag(containerId, pag, loadFn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!pag || pag.total_pages <= 1) { el.innerHTML = ''; return; }
+  let html = `<span class="page-info">Page ${pag.page} of ${pag.total_pages} (${pag.total} records)</span>`;
+  if (pag.page > 1) html += `<button class="page-btn" onclick="${loadFn.name}(${pag.page-1})">‹ Prev</button>`;
+  for (let i = Math.max(1, pag.page-2); i <= Math.min(pag.total_pages, pag.page+2); i++) {
+    html += `<button class="page-btn ${i===pag.page?'active':''}" onclick="${loadFn.name}(${i})">${i}</button>`;
+  }
+  if (pag.page < pag.total_pages) html += `<button class="page-btn" onclick="${loadFn.name}(${pag.page+1})">Next ›</button>`;
+  el.innerHTML = html;
+}
+</script>
+</body>
+</html>

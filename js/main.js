@@ -1,321 +1,244 @@
-/* ============================================
-   RFT Entertainment - Main JavaScript
-   Application initialization and orchestration
-   ============================================ */
+/* ============================================================
+   RFT Entertainment — Main Application
+   Navigation, auth handlers, global wiring
+   ============================================================ */
+(function () {
+  'use strict';
 
-(function() {
-    'use strict';
+  const PROTECTED_PAGES = ['homePage','tasksPage','walletPage','rechargePage','withdrawPage',
+    'vipPage','referralPage','earningsPage','notificationsPage','newsCenterPage',
+    'mypagePage','personalInfoPage'];
 
-    // ==================== APPLICATION CONFIGURATION ====================
+  // ── Page navigation ────────────────────────────────────────────────────────
+  function navigate(pageId) {
+    const isAuth = !!localStorage.getItem('rft_access_token');
+    if (PROTECTED_PAGES.includes(pageId) && !isAuth) {
+      pageId = 'loginPage';
+    }
+    window.RFTCore?.showPage(pageId);
+    // update bottom nav active state
+    document.querySelectorAll('.nav-item').forEach(n => {
+      n.classList.toggle('active', n.dataset.page === pageId);
+    });
+    // hide bottom nav on auth pages
+    const bottomNav = document.getElementById('bottomNav');
+    const floatBtns = document.getElementById('floatingButtons');
+    const authPages = ['loginPage','registerPage','forgotPage'];
+    if (bottomNav) bottomNav.style.display = authPages.includes(pageId) ? 'none' : 'flex';
+    if (floatBtns) floatBtns.style.display = authPages.includes(pageId) ? 'none' : 'flex';
+    // fire page-specific event
+    document.dispatchEvent(new CustomEvent(`rft:page:${pageId}`));
+  }
 
-    const APP_CONFIG = {
-        name: 'RFT Entertainment',
-        version: '2.0.0',
-        environment: 'production',
-        debug: false
-    };
+  // ── Auth handlers ──────────────────────────────────────────────────────────
+  async function handleLogin() {
+    const emailOrPhone = document.getElementById('loginEmail')?.value?.trim();
+    const password     = document.getElementById('loginPassword')?.value;
+    if (!emailOrPhone || !password) {
+      window.RFTCore?.showToast('Enter email/phone and password', 'error');
+      return;
+    }
+    const btn = document.querySelector('#loginPage .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
+    try {
+      const r = await window.RFTApi?.post('/auth/login', { email_or_phone: emailOrPhone, password });
+      if (r?.success) {
+        window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
+        window.RFTCore?.setCurrentUser(r.data.user);
+        window.RFTCore?.showToast('Welcome back!', 'success');
+        navigate('homePage');
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Login failed', 'error');
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Server error. Try again.', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
+    }
+  }
 
-    // ==================== MODULE REGISTRATION ====================
+  async function handleRegister() {
+    if (!document.getElementById('agreeTerms')?.checked) {
+      window.RFTCore?.showToast('Please agree to Terms & Conditions', 'error');
+      return;
+    }
+    const name     = document.getElementById('registerName')?.value?.trim();
+    const email    = document.getElementById('registerEmail')?.value?.trim();
+    const phone    = document.getElementById('registerPhone')?.value?.trim();
+    const password = document.getElementById('registerPassword')?.value;
+    const refCode  = document.getElementById('registerRef')?.value?.trim();
+    if (!name || !email || !phone || !password) {
+      window.RFTCore?.showToast('Fill in all required fields', 'error');
+      return;
+    }
+    if (password.length < 6) {
+      window.RFTCore?.showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+    const btn = document.querySelector('#registerPage .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating account…'; }
+    try {
+      const payload = { name, email, phone: phone.startsWith('0') ? phone : '0' + phone, password };
+      if (refCode) payload.referral_code = refCode;
+      const r = await window.RFTApi?.post('/auth/register', payload);
+      if (r?.success) {
+        window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
+        window.RFTCore?.setCurrentUser(r.data.user);
+        window.RFTCore?.showToast('Account created! Welcome to RFT!', 'success');
+        navigate('homePage');
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Registration failed', 'error');
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Server error. Try again.', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
+    }
+  }
 
-    const modules = {
-        core: null,
-        auth: null,
-        taskEngine: null,
-        wallet: null
-    };
+  async function handleForgot() {
+    const val = document.getElementById('forgotEmail')?.value?.trim();
+    if (!val) { window.RFTCore?.showToast('Enter your email or phone', 'error'); return; }
+    const btn = document.querySelector('#forgotPage .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+      const r = await window.RFTApi?.post('/auth/forgot-password', { email_or_phone: val });
+      if (r?.success) {
+        document.getElementById('forgotStep1').style.display = 'none';
+        document.getElementById('forgotStep2').style.display = 'block';
+        window.RFTCore?.showToast('Reset code generated. Check with admin if no SMS.', 'success');
+        // dev mode: show OTP in toast
+        if (r.debug_otp) window.RFTCore?.showToast(`Dev OTP: ${r.debug_otp}`, 'info');
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Request failed', 'error');
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Server error. Try again.', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Send Reset Code'; }
+    }
+  }
 
-    /**
-     * Register module
-     */
-    function registerModule(name, module) {
-        if (module) {
-            modules[name] = module;
-            console.log(`[RFT] Module registered: ${name}`);
+  async function handleResetPassword() {
+    const emailOrPhone = document.getElementById('forgotEmail')?.value?.trim();
+    const otp          = document.getElementById('forgotOtp')?.value?.trim();
+    const newPwd       = document.getElementById('forgotNewPwd')?.value;
+    if (!otp || otp.length !== 6) { window.RFTCore?.showToast('Enter the 6-digit code', 'error'); return; }
+    if (!newPwd || newPwd.length < 6) { window.RFTCore?.showToast('Password must be at least 6 characters', 'error'); return; }
+    const btn = document.querySelector('#forgotStep2 .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Resetting…'; }
+    try {
+      const r = await window.RFTApi?.post('/auth/reset-password', {
+        email_or_phone: emailOrPhone, otp, new_password: newPwd
+      });
+      if (r?.success) {
+        window.RFTCore?.showToast('Password reset! Please login.', 'success');
+        // reset form state
+        document.getElementById('forgotStep2').style.display = 'none';
+        document.getElementById('forgotStep1').style.display = 'block';
+        document.getElementById('forgotEmail').value = '';
+        document.getElementById('forgotOtp').value = '';
+        document.getElementById('forgotNewPwd').value = '';
+        setTimeout(() => navigate('loginPage'), 1200);
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Reset failed', 'error');
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Server error. Try again.', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      const rt = localStorage.getItem('rft_refresh_token');
+      if (rt) await window.RFTApi?.post('/auth/logout', { refresh_token: rt });
+    } catch (_) {}
+    window.RFTApi?.clearTokens();
+    window.RFTCore?.clearAuth();
+    window.RFTCore?.showToast('Logged out', 'info');
+    navigate('loginPage');
+  }
+
+  // ── Load public config from backend ───────────────────────────────────────
+  async function loadAppConfig() {
+    try {
+      const r = await fetch('https://rft-backend-production.up.railway.app/api/config');
+      const data = await r.json();
+      if (data.success) {
+        const cfg = data.data;
+        // update WhatsApp button
+        const waBtn = document.querySelector('.fab.whatsapp');
+        if (waBtn && cfg.support_whatsapp) {
+          waBtn.href = `https://wa.me/${cfg.support_whatsapp}`;
         }
+        // store config globally for wallet.js to use
+        window.RFT_CONFIG = cfg;
+      }
+    } catch (_) {
+      // use defaults silently
+      window.RFT_CONFIG = { pkr_rate: 280, min_recharge_usdt: 10, min_withdraw_usdt: 10 };
     }
-
-    /**
-     * Get module
-     */
-    function getModule(name) {
-        return modules[name];
-    }
-
-    // ==================== INITIALIZATION SEQUENCE ====================
-
-    /**
-     * Initialize core module
-     */
-    function initCore() {
-        if (window.RFTCore) {
-            registerModule('core', window.RFTCore);
-            window.RFTCore.init();
-            return true;
-        }
-        console.error('[RFT] Core module not found');
-        return false;
-    }
-
-    /**
-     * Initialize auth module
-     */
-    function initAuth() {
-        if (window.RFTAuth) {
-            registerModule('auth', window.RFTAuth);
-            window.RFTAuth.init();
-            return true;
-        }
-        console.error('[RFT] Auth module not found');
-        return false;
-    }
-
-    /**
-     * Initialize task engine module
-     */
-    function initTaskEngine() {
-        if (window.RFTTaskEngine) {
-            registerModule('taskEngine', window.RFTTaskEngine);
-            window.RFTTaskEngine.init();
-            return true;
-        }
-        console.error('[RFT] Task engine module not found');
-        return false;
-    }
-
-    /**
-     * Initialize wallet module
-     */
-    function initWallet() {
-        if (window.RFTWallet) {
-            registerModule('wallet', window.RFTWallet);
-            window.RFTWallet.init();
-            return true;
-        }
-        console.error('[RFT] Wallet module not found');
-        return false;
-    }
-
-    // ==================== THEME MANAGEMENT ====================
-
-    /**
-     * Apply video parity theme
-     */
-    function applyVideoParityTheme() {
-        document.body.classList.add('rft-video-parity-active');
-        console.log('[RFT] Video parity theme applied');
-    }
-
-    /**
-     * Remove video parity theme
-     */
-    function removeVideoParityTheme() {
-        document.body.classList.remove('rft-video-parity-active');
-        console.log('[RFT] Video parity theme removed');
-    }
-
-    /**
-     * Apply performance theme
-     */
-    function applyPerformanceTheme() {
-        document.body.classList.add('rft-performance-theme');
-        console.log('[RFT] Performance theme applied');
-    }
-
-    // ==================== ROUTING ====================
-
-    /**
-     * Handle navigation
-     */
-    function navigate(pageId) {
-        const core = getModule('core');
-        if (core) {
-            core.showPage(pageId);
-            
-            // Dispatch navigation event
-            document.dispatchEvent(new CustomEvent('rft:navigate', {
-                detail: { pageId }
-            }));
-        }
-    }
-
-    /**
-     * Setup navigation handlers
-     */
-    function setupNavigation() {
-        // Bottom navigation
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const pageId = item.dataset.page;
-                if (pageId) {
-                    navigate(pageId);
-                    
-                    // Update active state
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    item.classList.add('active');
-                }
-            });
-        });
-
-        // Back buttons
-        const backButtons = document.querySelectorAll('.back-btn');
-        backButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const core = getModule('core');
-                const auth = getModule('auth');
-                
-                if (auth && auth.isAuthenticated()) {
-                    navigate('homePage');
-                } else {
-                    navigate('loginPage');
-                }
-            });
-        });
-    }
-
-    // ==================== ERROR HANDLING ====================
-
-    /**
-     * Global error handler
-     */
-    function setupErrorHandling() {
-        window.addEventListener('error', (e) => {
-            console.error('[RFT] Global error:', e.error);
-            
-            if (APP_CONFIG.debug) {
-                const core = getModule('core');
-                if (core) {
-                    core.showToast('An error occurred. See console for details.', 'error');
-                }
-            }
-        });
-
-        window.addEventListener('unhandledrejection', (e) => {
-            console.error('[RFT] Unhandled promise rejection:', e.reason);
-        });
-    }
-
-    // ==================== PERFORMANCE OPTIMIZATION ====================
-
-    /**
-     * Setup performance monitoring
-     */
-    function setupPerformanceMonitoring() {
-        if ('PerformanceObserver' in window) {
-            const observer = new PerformanceObserver((list) => {
-                for (const entry of list.getEntries()) {
-                    if (entry.duration > 100) {
-                        console.warn(`[RFT] Slow operation: ${entry.name} took ${entry.duration}ms`);
-                    }
-                }
-            });
-            
-            observer.observe({ entryTypes: ['measure', 'navigation'] });
-        }
-    }
-
-    // ==================== SERVICE WORKER ====================
-
-    /**
-     * Register service worker (placeholder for PWA)
-     */
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator && APP_CONFIG.environment === 'production') {
-            // Placeholder for service worker registration
-            console.log('[RFT] Service worker registration placeholder');
-        }
-    }
-
-    // ==================== STARTUP SEQUENCE ====================
-
-    /**
-     * Initialize application
-     */
-    function init() {
-        console.log(`[RFT] Initializing ${APP_CONFIG.name} v${APP_CONFIG.version}`);
-
-        // Mark start time
-        const startTime = performance.now();
-
-        // Initialize modules in order
-        const coreInitialized = initCore();
-        const authInitialized = initAuth();
-        const taskEngineInitialized = initTaskEngine();
-        const walletInitialized = initWallet();
-
-        // Setup application features
-        if (coreInitialized) {
-            setupNavigation();
-            setupErrorHandling();
-            setupPerformanceMonitoring();
-            registerServiceWorker();
-
-            // Apply default theme
-            applyVideoParityTheme();
-        }
-
-        // Calculate initialization time
-        const endTime = performance.now();
-        const initTime = (endTime - startTime).toFixed(2);
-
-        console.log(`[RFT] Initialization complete in ${initTime}ms`);
-
-        // Dispatch ready event
-        document.dispatchEvent(new CustomEvent('rft:ready', {
-            detail: {
-                version: APP_CONFIG.version,
-                initTime,
-                modules: {
-                    core: coreInitialized,
-                    auth: authInitialized,
-                    taskEngine: taskEngineInitialized,
-                    wallet: walletInitialized
-                }
-            }
-        }));
-
-        // Show welcome message
-        const core = getModule('core');
-        if (core) {
-            setTimeout(() => {
-                core.showToast(`Welcome to ${APP_CONFIG.name}`, 'info');
-            }, 500);
-        }
-    }
-
-    // ==================== EXPORTS ====================
-
-    window.RFTApp = {
-        config: APP_CONFIG,
-        registerModule,
-        getModule,
-        initCore,
-        initAuth,
-        initTaskEngine,
-        initWallet,
-        applyVideoParityTheme,
-        removeVideoParityTheme,
-        applyPerformanceTheme,
-        navigate,
-        init
-    };
-
-    // ==================== AUTO-INITIALIZATION ====================
-
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init, { once: true });
+  }
+  function checkUrlRef() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      const refInput = document.getElementById('registerRef');
+      if (refInput) refInput.value = ref;
+      localStorage.setItem('rft_ref_code', ref);
     } else {
-        // DOM already loaded, initialize immediately
-        init();
+      const stored = localStorage.getItem('rft_ref_code');
+      if (stored) {
+        const refInput = document.getElementById('registerRef');
+        if (refInput) refInput.value = stored;
+      }
     }
+  }
 
-    // Also initialize on window load as fallback
-    window.addEventListener('load', () => {
-        if (!window.RFTApp._initialized) {
-            init();
-            window.RFTApp._initialized = true;
-        }
-    }, { once: true });
+  // ── Referral code from URL ─────────────────────────────────────────────────
+  function setupNav() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const page = item.dataset.page;
+        if (page) navigate(page);
+      });
+    });
+  }
 
+  // ── Bottom nav setup ───────────────────────────────────────────────────────
+  function determineStartPage() {
+    const hasToken = !!localStorage.getItem('rft_access_token');
+    checkUrlRef();
+    if (hasToken) {
+      navigate('homePage');
+    } else {
+      // check if ref param in URL → go to register
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('ref')) {
+        navigate('registerPage');
+      } else {
+        navigate('loginPage');
+      }
+    }
+  }
+
+  // ── Initial route ──────────────────────────────────────────────────────────
+  function init() {
+    loadAppConfig();
+    setupNav();
+    determineStartPage();
+    // expose global handlers used by HTML onclick
+    window.handleLogin          = handleLogin;
+    window.handleRegister       = handleRegister;
+    window.handleForgot         = handleForgot;
+    window.handleResetPassword  = handleResetPassword;
+    window.handleLogout         = handleLogout;
+    window.RFTApp               = { ...window.RFTApp, navigate };
+  }
+
+  window.RFTApp = { navigate, init };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
 })();

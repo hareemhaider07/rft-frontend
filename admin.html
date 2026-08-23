@@ -712,6 +712,7 @@ async function adminLogin() {
       showApp();
     } else {
       errEl.textContent = res.message || 'Login failed';
+      if (res.error) errEl.textContent += ' — ' + res.error;
       errEl.style.display = 'block';
     }
   } catch (e) {

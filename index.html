@@ -220,9 +220,9 @@
                     <div class="feature-icon orange"><i class="ph-bold ph-crown"></i></div>
                     <span class="feature-label">VIP</span>
                 </div>
-                <div class="feature-item" onclick="RFTApp.navigate('referralPage')">
-                    <div class="feature-icon pink"><i class="ph-bold ph-users-three"></i></div>
-                    <span class="feature-label">Referral</span>
+                <div class="feature-item" onclick="RFTApp.navigate('luckyPage')">
+                    <div class="feature-icon pink"><i class="ph-bold ph-clover"></i></div>
+                    <span class="feature-label">Lucky</span>
                 </div>
                 <div class="feature-item" onclick="RFTApp.navigate('notificationsPage')">
                     <div class="feature-icon cyan"><i class="ph-bold ph-bell"></i></div>
@@ -253,6 +253,40 @@
             </section>
             <!-- Member Rankings -->
             <section class="rft-video-member-rank" id="rftVideoMemberRank"></section>
+        </div>
+
+        <!-- ═══════════ LUCKY DRAW ═══════════ -->
+        <div class="page lucky-page" id="luckyPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
+                <h2>Lucky Draw</h2>
+            </div>
+            <div class="lucky-subtitle">Spin once per day to win USDT & Points</div>
+
+            <!-- Spin status badge -->
+            <div class="lucky-status-bar" id="luckyStatusBar">
+                <div class="lsb-loading">Loading…</div>
+            </div>
+
+            <!-- Wheel container -->
+            <div class="lucky-wheel-wrap">
+                <div class="lucky-wheel-pointer"><i class="ph-bold ph-caret-down"></i></div>
+                <canvas id="luckyWheelCanvas" width="300" height="300"></canvas>
+            </div>
+
+            <!-- Spin button -->
+            <div class="lucky-spin-btn-wrap">
+                <button class="lucky-spin-btn" id="luckySpinBtn" onclick="spinWheel()">
+                    <i class="ph-bold ph-shuffle"></i> SPIN NOW
+                </button>
+            </div>
+
+            <!-- Result card -->
+            <div class="lucky-result-card" id="luckyResultCard" style="display:none"></div>
+
+            <!-- History -->
+            <div class="section-title">Recent Spins</div>
+            <div class="lucky-history" id="luckyHistory"></div>
         </div>
 
         <!-- ═══════════ TASKS ═══════════ -->
@@ -667,6 +701,7 @@
     <script src="js/vip.js"></script>
     <script src="js/referral.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/lucky.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

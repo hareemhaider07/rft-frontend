@@ -236,6 +236,10 @@
                     <div class="feature-icon gold-spin"><i class="ph-bold ph-shooting-star"></i></div>
                     <span class="feature-label">Lucky Draw</span>
                 </div>
+                <div class="feature-item" onclick="RFTApp.navigate('leaderboardPage')">
+                    <div class="feature-icon teal"><i class="ph-bold ph-trophy"></i></div>
+                    <span class="feature-label">Leaderboard</span>
+                </div>
             </div>
             <!-- Task Hall -->
             <section class="rft-task-hall" id="rftTaskHall">
@@ -583,6 +587,56 @@
             </div>
         </nav>
 
+        <!-- ═══════════ LEADERBOARD ═══════════ -->
+        <div class="page leaderboard-page" id="leaderboardPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
+                <h2>Leaderboard</h2>
+                <button class="lb-refresh-btn" onclick="RFTLeaderboard.refresh()" id="lbRefreshBtn">
+                    <i class="ph-bold ph-arrows-clockwise"></i>
+                </button>
+            </div>
+
+            <!-- My rank banner -->
+            <div class="lb-my-rank" id="lbMyRank" style="display:none">
+                <i class="ph-bold ph-medal"></i>
+                <span>Your rank: <strong id="lbMyRankNum">—</strong></span>
+            </div>
+
+            <!-- Tab filters -->
+            <div class="lb-tabs">
+                <button class="lb-tab active" data-type="weekly"  onclick="RFTLeaderboard.load('weekly', this)">
+                    <i class="ph-bold ph-calendar-week"></i> Weekly
+                </button>
+                <button class="lb-tab" data-type="monthly" onclick="RFTLeaderboard.load('monthly', this)">
+                    <i class="ph-bold ph-calendar"></i> Monthly
+                </button>
+                <button class="lb-tab" data-type="tasks"   onclick="RFTLeaderboard.load('tasks', this)">
+                    <i class="ph-bold ph-play-circle"></i> Tasks
+                </button>
+                <button class="lb-tab" data-type="referrals" onclick="RFTLeaderboard.load('referrals', this)">
+                    <i class="ph-bold ph-users-three"></i> Referrals
+                </button>
+                <button class="lb-tab" data-type="spin" onclick="RFTLeaderboard.load('spin', this)">
+                    <i class="ph-bold ph-shooting-star"></i> Lucky Draw
+                </button>
+            </div>
+
+            <!-- Tab description -->
+            <div class="lb-description" id="lbDescription">Top earners this week</div>
+
+            <!-- Top 3 podium -->
+            <div class="lb-podium" id="lbPodium"></div>
+
+            <!-- Full list -->
+            <div class="lb-list" id="lbList">
+                <div class="tx-loading">Loading leaderboard…</div>
+            </div>
+
+            <!-- Last updated -->
+            <div class="lb-updated" id="lbUpdated"></div>
+        </div>
+
         <!-- ═══════════ LUCKY DRAW ═══════════ -->
         <div class="page lucky-page" id="luckyPage">
             <div class="page-header">
@@ -731,6 +785,7 @@
     <script src="js/referral.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/spin.js"></script>
+    <script src="js/leaderboard.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

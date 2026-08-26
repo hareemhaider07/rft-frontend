@@ -510,10 +510,66 @@
                 <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
                 <h2>Earnings</h2>
             </div>
-            <div class="earnings-summary" id="earningsSummary">
-                <div class="vsc-loading">Loading earnings…</div>
+
+            <!-- Period tabs -->
+            <div class="lb-tabs" style="padding:0 16px 14px">
+                <button class="lb-tab active" data-period="7"  onclick="RFTEarnings.load(7,  this)"><i class="ph-bold ph-calendar"></i> 7 Days</button>
+                <button class="lb-tab"        data-period="30" onclick="RFTEarnings.load(30, this)"><i class="ph-bold ph-calendar"></i> 30 Days</button>
+                <button class="lb-tab"        data-period="90" onclick="RFTEarnings.load(90, this)"><i class="ph-bold ph-calendar"></i> 90 Days</button>
             </div>
-            <div class="section-title" style="margin-top:16px">Earning History</div>
+
+            <!-- Summary stat cards -->
+            <div class="earn-stat-grid" id="earningsSummary" style="padding:0 16px 16px">
+                <div class="earn-stat"><div class="esv" id="esTotalUsdt">—</div><div class="esl">Total Earned (USDT)</div></div>
+                <div class="earn-stat"><div class="esv" id="esTotalPkr">—</div><div class="esl">Total Earned (PKR)</div></div>
+                <div class="earn-stat"><div class="esv" id="esStreak">—</div><div class="esl">Day Streak 🔥</div></div>
+                <div class="earn-stat"><div class="esv" id="esActiveDays">—</div><div class="esl">Active Days</div></div>
+            </div>
+
+            <!-- Chart card -->
+            <div class="earn-chart-card" id="earnChartCard">
+                <div class="ecc-header">
+                    <div class="ecc-title" id="eccTitle">Daily Earnings</div>
+                    <div class="ecc-legend">
+                        <span class="ecl-dot" style="background:#d4a843"></span><span>Tasks</span>
+                        <span class="ecl-dot" style="background:#3b82f6"></span><span>Referral</span>
+                        <span class="ecl-dot" style="background:#a855f7"></span><span>Spin</span>
+                    </div>
+                </div>
+                <div class="ecc-canvas-wrap">
+                    <canvas id="earningsCanvas"></canvas>
+                </div>
+                <div class="ecc-tooltip" id="eccTooltip" style="display:none"></div>
+            </div>
+
+            <!-- Source breakdown -->
+            <div style="padding:0 16px 16px">
+                <div class="section-title" style="padding:12px 0 8px">Source Breakdown</div>
+                <div class="ebd-row">
+                    <div class="ebd-icon" style="background:rgba(212,168,67,.15);color:#d4a843"><i class="ph-bold ph-play-circle"></i></div>
+                    <div class="ebd-info"><div class="ebd-label">Task Rewards</div><div class="ebd-sub" id="ebdTasksSub">—</div></div>
+                    <div class="ebd-val" id="ebdTasksVal">—</div>
+                </div>
+                <div class="ebd-row">
+                    <div class="ebd-icon" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="ph-bold ph-users-three"></i></div>
+                    <div class="ebd-info"><div class="ebd-label">Referral Commissions</div><div class="ebd-sub" id="ebdRefSub">—</div></div>
+                    <div class="ebd-val" id="ebdRefVal">—</div>
+                </div>
+                <div class="ebd-row">
+                    <div class="ebd-icon" style="background:rgba(168,85,247,.15);color:#a855f7"><i class="ph-bold ph-shooting-star"></i></div>
+                    <div class="ebd-info"><div class="ebd-label">Lucky Draw Wins</div><div class="ebd-sub" id="ebdSpinSub">—</div></div>
+                    <div class="ebd-val" id="ebdSpinVal">—</div>
+                </div>
+            </div>
+
+            <!-- Best day badge -->
+            <div class="earn-best-day" id="earnBestDay" style="display:none;margin:0 16px 16px">
+                <i class="ph-bold ph-trophy"></i>
+                <div><div class="ebd-label">Best Day</div><div id="earnBestDayText" class="ebd-sub">—</div></div>
+            </div>
+
+            <!-- Transaction history -->
+            <div class="section-title">Earning History</div>
             <div class="transaction-list" id="earningsList"></div>
         </div>
 
@@ -822,6 +878,7 @@
     <script src="js/notifications.js"></script>
     <script src="js/spin.js"></script>
     <script src="js/leaderboard.js"></script>
+    <script src="js/earnings.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

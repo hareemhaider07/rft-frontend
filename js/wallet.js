@@ -451,7 +451,9 @@
     document.addEventListener('rft:page:walletPage',   loadWalletPage);
     document.addEventListener('rft:page:rechargePage', loadRechargePage);
     document.addEventListener('rft:page:withdrawPage', loadWithdrawPage);
-    document.addEventListener('rft:page:earningsPage', loadEarningsPage);
+    document.addEventListener('rft:page:earningsPage', () => {
+      // earnings.js handles this page now
+    });
     document.addEventListener('rft:page:mypagePage',   loadProfilePage);
     document.addEventListener('rft:page:personalInfoPage', loadProfilePage);
 

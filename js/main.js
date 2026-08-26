@@ -46,6 +46,7 @@
         window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
         window.RFTCore?.setCurrentUser(r.data.user);
         window.RFTCore?.showToast('Welcome back!', 'success');
+        window.RFTNotifications?.startPolling?.();
         navigate('homePage');
       } else {
         window.RFTCore?.showToast(r?.message || 'Login failed', 'error');
@@ -85,6 +86,7 @@
         window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
         window.RFTCore?.setCurrentUser(r.data.user);
         window.RFTCore?.showToast('Account created! Welcome to RFT!', 'success');
+        window.RFTNotifications?.startPolling?.();
         navigate('homePage');
       } else {
         window.RFTCore?.showToast(r?.message || 'Registration failed', 'error');
@@ -258,6 +260,9 @@
     } catch (_) {}
     window.RFTApi?.clearTokens();
     window.RFTCore?.clearAuth();
+    // Stop the notification poller
+    document.dispatchEvent(new CustomEvent('rft:auth:logout'));
+    window.RFTNotifications?.stopPolling?.();
     window.RFTCore?.showToast('Logged out', 'info');
     navigate('loginPage');
   }
@@ -330,6 +335,10 @@
     loadAppConfig();
     setupNav();
     determineStartPage();
+    // Start notification polling if already logged in (page refresh case)
+    if (localStorage.getItem('rft_access_token')) {
+      setTimeout(() => window.RFTNotifications?.startPolling?.(), 2000);
+    }
     // expose global handlers used by HTML onclick
     window.handleLogin          = handleLogin;
     window.handleRegister       = handleRegister;

@@ -324,9 +324,122 @@
     } catch (_) {}
   }
 
-  // ── KYC overlay ───────────────────────────────────────────────────────────
+  // ── Personal Info Edit ───────────────────────────────────────────────────────
+  function toggleEditMode() {
+    const viewMode = document.getElementById('piViewMode');
+    const editMode = document.getElementById('piEditMode');
+    const editBtn  = document.getElementById('piEditBtn');
+    const isEditing = editMode.style.display !== 'none';
+
+    if (isEditing) {
+      // Switch back to view
+      editMode.style.display = 'none';
+      viewMode.style.display = 'block';
+      editBtn.innerHTML = '<i class="ph-bold ph-pencil"></i> Edit';
+    } else {
+      // Pre-fill edit fields from current data
+      const user = window.RFTCore?.getCurrentUser?.() || {};
+      document.getElementById('editName').value       = user.name       || '';
+      document.getElementById('editWhatsapp').value   = user.whatsapp   || '';
+      document.getElementById('editResidence').value  = user.residence  || '';
+      document.getElementById('editOccupation').value = user.occupation || '';
+      document.getElementById('editAge').value        = user.age        || '';
+      document.getElementById('editGender').value     = user.gender     || '';
+
+      viewMode.style.display = 'none';
+      editMode.style.display = 'block';
+      editBtn.innerHTML = '<i class="ph-bold ph-x"></i> Cancel';
+    }
+  }
+
+  async function savePersonalInfo() {
+    const name       = document.getElementById('editName').value.trim();
+    const whatsapp   = document.getElementById('editWhatsapp').value.trim();
+    const residence  = document.getElementById('editResidence').value.trim();
+    const occupation = document.getElementById('editOccupation').value.trim();
+    const age        = document.getElementById('editAge').value;
+    const gender     = document.getElementById('editGender').value;
+
+    if (!name) { window.RFTCore?.showToast('Name is required', 'error'); return; }
+
+    const btn = document.getElementById('piSaveBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    try {
+      const r = await window.RFTApi?.put('/user/profile', {
+        name,
+        whatsapp:   whatsapp   || undefined,
+        residence:  residence  || undefined,
+        occupation: occupation || undefined,
+        age:        age        ? parseInt(age) : undefined,
+        gender:     gender     || undefined
+      });
+
+      if (r?.success) {
+        // Update stored user
+        const user = window.RFTCore?.getCurrentUser?.() || {};
+        window.RFTCore?.setCurrentUser({ ...user, name, whatsapp, residence, occupation, age: age ? parseInt(age) : user.age, gender });
+
+        // Update display fields
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+        set('infoName',    name);
+        set('profileName', name);
+
+        window.RFTCore?.showToast('Profile updated successfully!', 'success');
+        toggleEditMode();
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Update failed', 'error');
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Error saving profile', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+    }
+  }
+
+  // ── KYC Overlay — updated to handle all states ───────────────────────────────
   function openKycOverlay() {
-    document.getElementById('rftKycOverlay').classList.add('show');
+    const overlay = document.getElementById('rftKycOverlay');
+    if (!overlay) return;
+
+    // Check current KYC status
+    const user = window.RFTCore?.getCurrentUser?.() || {};
+    const status = user.kyc_status || 'not_started';
+
+    // Hide all states first
+    ['kycVerifiedState','kycPendingState','kycRejectedState','kycStep1','kycStep2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+    if (status === 'verified') {
+      document.getElementById('kycVerifiedState').style.display = 'block';
+    } else if (status === 'pending') {
+      document.getElementById('kycPendingState').style.display = 'block';
+    } else if (status === 'rejected') {
+      // Show rejection notice + allow resubmit
+      document.getElementById('kycRejectedState').style.display = 'block';
+      document.getElementById('kycStep1').style.display = 'block';
+      const subtitle = document.getElementById('kycStep1Subtitle');
+      if (subtitle) subtitle.style.display = 'none'; // hide default subtitle, rejection notice replaces it
+      // Load rejection reason from API
+      window.RFTApi?.get('/kyc/status').then(r => {
+        if (r?.success && r.data.documents?.length) {
+          const latestDoc = r.data.documents[0];
+          const reasonEl = document.getElementById('kycRejectionReason');
+          if (reasonEl && latestDoc.rejection_reason) {
+            reasonEl.textContent = 'Reason: ' + latestDoc.rejection_reason;
+          }
+        }
+      }).catch(() => {});
+    } else {
+      // not_started — show normal flow
+      document.getElementById('kycStep1').style.display = 'block';
+      const subtitle = document.getElementById('kycStep1Subtitle');
+      if (subtitle) subtitle.style.display = 'block';
+    }
+
+    overlay.classList.add('show');
   }
   function closeKycOverlay() {
     document.getElementById('rftKycOverlay').classList.remove('show');
@@ -361,28 +474,40 @@
     if (!front) { window.RFTCore?.showToast('Front image is required', 'error'); return; }
 
     const formData = new FormData();
-    formData.append('document_type', docType);
+    formData.append('document_type',   docType);
     formData.append('issuing_country', country);
     formData.append('document_number', docNum);
     formData.append('front_image', front);
     const back   = document.getElementById('kycBack')?.files[0];
     const selfie = document.getElementById('kycSelfie')?.files[0];
-    if (back)   formData.append('back_image', back);
+    if (back)   formData.append('back_image',   back);
     if (selfie) formData.append('selfie_image', selfie);
+
+    const submitBtn = document.querySelector('#kycStep2 .btn-primary');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
 
     try {
       const r = await window.RFTApi?.upload('/kyc/submit', formData, null);
       if (r?.success) {
-        window.RFTCore?.showToast('KYC submitted. Review in 24–48 hours.', 'success');
+        window.RFTCore?.showToast('KYC submitted. Review takes 24–48 hours.', 'success');
         closeKycOverlay();
-        // update local user kyc_status
+        // Update local user kyc_status to pending
         const user = window.RFTCore?.getCurrentUser();
-        if (user) window.RFTCore?.setCurrentUser({ ...user, kyc_status: 'pending' });
+        if (user) {
+          window.RFTCore?.setCurrentUser({ ...user, kyc_status: 'pending' });
+          // Update badge in profile menu
+          const badge = document.getElementById('kycStatusBadge');
+          if (badge) { badge.textContent = 'pending'; badge.className = 'kyc-badge kyc-pending'; }
+          const infoKyc = document.getElementById('infoKyc');
+          if (infoKyc) infoKyc.textContent = 'pending';
+        }
       } else {
         window.RFTCore?.showToast(r?.message || 'KYC submission failed', 'error');
       }
     } catch (_) {
       window.RFTCore?.showToast('Error submitting KYC', 'error');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit KYC'; }
     }
   }
 
@@ -470,6 +595,8 @@
     window.kycBackStep           = kycBackStep;
     window.previewKyc            = previewKyc;
     window.submitKycForm         = submitKycForm;
+    window.toggleEditMode        = toggleEditMode;
+    window.savePersonalInfo      = savePersonalInfo;
     window.copyText              = copyText;
     window.togglePwd             = togglePwd;
   }

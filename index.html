@@ -645,18 +645,87 @@
             <div class="page-header">
                 <button class="back-btn" onclick="RFTApp.navigate('mypagePage')"><i class="ph-bold ph-arrow-left"></i></button>
                 <h2>Personal Information</h2>
+                <button class="pi-edit-btn" id="piEditBtn" onclick="toggleEditMode()">
+                    <i class="ph-bold ph-pencil"></i> Edit
+                </button>
             </div>
-            <div class="info-card">
-                <div class="info-row"><span class="info-label">Name</span><span class="info-value" id="infoName">—</span></div>
-                <div class="info-row"><span class="info-label">Email</span><span class="info-value" id="infoEmail">—</span></div>
-                <div class="info-row"><span class="info-label">Phone</span><span class="info-value" id="infoPhone">—</span></div>
-                <div class="info-row"><span class="info-label">Referral Code</span>
-                    <span class="info-value" id="infoRefCode">—</span>
-                    <button class="copy-btn" onclick="copyText('infoRefCode')"><i class="ph-bold ph-copy"></i></button>
+
+            <!-- View mode -->
+            <div id="piViewMode">
+                <div class="info-card">
+                    <div class="info-row"><span class="info-label">Name</span><span class="info-value" id="infoName">—</span></div>
+                    <div class="info-row"><span class="info-label">Email</span><span class="info-value" id="infoEmail">—</span></div>
+                    <div class="info-row"><span class="info-label">Phone</span><span class="info-value" id="infoPhone">—</span></div>
+                    <div class="info-row">
+                        <span class="info-label">Referral Code</span>
+                        <span class="info-value" id="infoRefCode">—</span>
+                        <button class="copy-btn" onclick="copyText('infoRefCode')"><i class="ph-bold ph-copy"></i></button>
+                    </div>
+                    <div class="info-row"><span class="info-label">VIP Level</span><span class="info-value" id="infoVip">—</span></div>
+                    <div class="info-row"><span class="info-label">KYC Status</span><span class="info-value" id="infoKyc">—</span></div>
+                    <div class="info-row"><span class="info-label">Member Since</span><span class="info-value" id="infoJoined">—</span></div>
                 </div>
-                <div class="info-row"><span class="info-label">VIP Level</span><span class="info-value" id="infoVip">—</span></div>
-                <div class="info-row"><span class="info-label">KYC Status</span><span class="info-value" id="infoKyc">—</span></div>
-                <div class="info-row"><span class="info-label">Member Since</span><span class="info-value" id="infoJoined">—</span></div>
+            </div>
+
+            <!-- Edit mode -->
+            <div id="piEditMode" style="display:none;padding:0 16px">
+                <div class="pi-note">You can update your name, WhatsApp and other details. Email and phone cannot be changed.</div>
+
+                <div class="input-group">
+                    <label class="input-label">Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-user input-icon"></i>
+                        <input type="text" class="form-input" id="editName" placeholder="Your full name">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">WhatsApp Number</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-whatsapp-logo input-icon"></i>
+                        <input type="tel" class="form-input" id="editWhatsapp" placeholder="e.g. 03001234567">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Residence / City</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-map-pin input-icon"></i>
+                        <input type="text" class="form-input" id="editResidence" placeholder="e.g. Karachi">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Occupation</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-briefcase input-icon"></i>
+                        <input type="text" class="form-input" id="editOccupation" placeholder="e.g. Student, Business">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Age</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-calendar input-icon"></i>
+                        <input type="number" class="form-input" id="editAge" placeholder="Your age" min="18" max="120">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Gender</label>
+                    <div class="input-wrapper" style="padding:0 14px">
+                        <i class="ph-bold ph-gender-intersex input-icon"></i>
+                        <select class="form-input" id="editGender" style="background:transparent;border:none;color:inherit">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="piSaveBtn" onclick="savePersonalInfo()">Save Changes</button>
+                <button class="btn-secondary" style="margin-top:8px" onclick="toggleEditMode()">Cancel</button>
             </div>
         </div>
 
@@ -805,9 +874,38 @@
                     <h3>KYC Verification</h3>
                     <button class="kyc-close" onclick="closeKycOverlay()"><i class="ph-bold ph-x"></i></button>
                 </div>
-                <!-- Step 1 -->
+
+                <!-- Verified state -->
+                <div id="kycVerifiedState" style="display:none;text-align:center;padding:32px 0">
+                    <div style="font-size:56px;margin-bottom:12px">✅</div>
+                    <div style="font-size:16px;font-weight:700;color:#22c55e;margin-bottom:8px">Identity Verified</div>
+                    <div style="font-size:13px;color:var(--text-muted)">Your KYC is approved. You can withdraw funds.</div>
+                    <button class="btn-primary" style="margin-top:24px" onclick="closeKycOverlay()">Close</button>
+                </div>
+
+                <!-- Pending state -->
+                <div id="kycPendingState" style="display:none;text-align:center;padding:32px 0">
+                    <div style="font-size:56px;margin-bottom:12px">⏳</div>
+                    <div style="font-size:16px;font-weight:700;color:#f97316;margin-bottom:8px">Under Review</div>
+                    <div style="font-size:13px;color:var(--text-muted)">Your documents are being reviewed. This takes 24–48 hours.</div>
+                    <button class="btn-primary" style="margin-top:24px" onclick="closeKycOverlay()">Close</button>
+                </div>
+
+                <!-- Rejected state — allow resubmit -->
+                <div id="kycRejectedState" style="display:none">
+                    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">
+                        <i class="ph-bold ph-warning" style="color:#ef4444;font-size:20px;flex-shrink:0;margin-top:2px"></i>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;color:#ef4444">KYC Rejected</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="kycRejectionReason">Please resubmit with clearer documents.</div>
+                        </div>
+                    </div>
+                    <p class="kyc-subtitle">Upload new documents to resubmit</p>
+                </div>
+
+                <!-- Step 1 — doc type (shown for not_started + rejected) -->
                 <div id="kycStep1">
-                    <p class="kyc-subtitle">Verify your identity to enable withdrawals</p>
+                    <p class="kyc-subtitle" id="kycStep1Subtitle">Verify your identity to enable withdrawals</p>
                     <div class="kyc-field">
                         <label>Document Type</label>
                         <select id="kycDocType" class="kyc-input">
@@ -833,7 +931,8 @@
                     </div>
                     <button class="btn-primary" onclick="kycNextStep()">Next</button>
                 </div>
-                <!-- Step 2 -->
+
+                <!-- Step 2 — upload images -->
                 <div id="kycStep2" style="display:none">
                     <p class="kyc-subtitle">Upload your document images</p>
                     <div class="kyc-upload-row">

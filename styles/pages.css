@@ -918,3 +918,37 @@
   0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
   50%       { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
 }
+
+/* ============================================================
+   Personal Info Edit Form
+   ============================================================ */
+
+/* Edit button in page header */
+.pi-edit-btn {
+  margin-left: auto;
+  background: rgba(212,168,67,.12);
+  border: 1px solid rgba(212,168,67,.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background .2s;
+}
+.pi-edit-btn:hover { background: rgba(212,168,67,.2); }
+
+/* Info note */
+.pi-note {
+  background: rgba(59,130,246,.08);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 12px;
+  color: #3b82f6;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}

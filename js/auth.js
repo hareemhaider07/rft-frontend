@@ -20,7 +20,10 @@
         password
       });
       if (r?.success && r.data) {
-        window.RFTApi?.setTokens(r.data.accessToken || r.data.access_token, r.data.refreshToken || r.data.refresh_token);
+        // Backend returns camelCase (accessToken) — handle both
+        const accessToken  = r.data.accessToken  || r.data.access_token;
+        const refreshToken = r.data.refreshToken || r.data.refresh_token;
+        window.RFTApi?.setTokens(accessToken, refreshToken);
         window.RFTCore?.setCurrentUser(r.data.user);
         if (rememberMe) {
           window.RFTCore?.Storage?.set('rft_remembered_login', {
@@ -40,7 +43,9 @@
     try {
       const r = await window.RFTApi?.post('/auth/register', userData);
       if (r?.success && r.data) {
-        window.RFTApi?.setTokens(r.data.accessToken || r.data.access_token, r.data.refreshToken || r.data.refresh_token);
+        const accessToken  = r.data.accessToken  || r.data.access_token;
+        const refreshToken = r.data.refreshToken || r.data.refresh_token;
+        window.RFTApi?.setTokens(accessToken, refreshToken);
         window.RFTCore?.setCurrentUser(r.data.user);
         return { success: true, user: r.data.user };
       }

@@ -43,7 +43,10 @@
     try {
       const r = await window.RFTApi?.post('/auth/login', { email_or_phone: emailOrPhone, password });
       if (r?.success) {
-        window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
+        // Backend returns either accessToken (camelCase) or access_token (snake_case)
+        const accessToken  = r.data.accessToken  || r.data.access_token;
+        const refreshToken = r.data.refreshToken || r.data.refresh_token;
+        window.RFTApi?.setTokens(accessToken, refreshToken);
         window.RFTCore?.setCurrentUser(r.data.user);
         window.RFTCore?.showToast('Welcome back!', 'success');
         window.RFTNotifications?.startPolling?.();
@@ -83,7 +86,9 @@
       if (refCode) payload.referral_code = refCode;
       const r = await window.RFTApi?.post('/auth/register', payload);
       if (r?.success) {
-        window.RFTApi?.setTokens(r.data.access_token, r.data.refresh_token);
+        const accessToken  = r.data.accessToken  || r.data.access_token;
+        const refreshToken = r.data.refreshToken || r.data.refresh_token;
+        window.RFTApi?.setTokens(accessToken, refreshToken);
         window.RFTCore?.setCurrentUser(r.data.user);
         window.RFTCore?.showToast('Account created! Welcome to RFT!', 'success');
         window.RFTNotifications?.startPolling?.();

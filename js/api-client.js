@@ -38,7 +38,10 @@
       if (!r.ok) { clearTokens(); return false; }
       const data = await r.json();
       if (data.success && data.data) {
-        setTokens(data.data.access_token, data.data.refresh_token);
+        // Handle both camelCase and snake_case token keys
+        const access  = data.data.accessToken  || data.data.access_token;
+        const refresh = data.data.refreshToken || data.data.refresh_token;
+        setTokens(access, refresh);
         return true;
       }
       clearTokens();

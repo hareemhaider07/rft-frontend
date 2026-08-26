@@ -32,13 +32,16 @@
      * Show page by ID
      */
     function showPage(pageId) {
-        document.querySelectorAll('.page, .home-page, .recharge-page, .withdraw-page, .wallet-page, .profile-page, .tasks-page, .joblevel-page, .earnings-page, .mypage-page').forEach(page => {
+        // Hide ALL pages — uses the .page class which every page has
+        document.querySelectorAll('.page').forEach(page => {
             page.classList.remove('show');
         });
 
         const page = document.getElementById(pageId);
         if (page) {
             page.classList.add('show');
+            // Scroll the page element itself back to top (not window, since pages are position:absolute)
+            page.scrollTop = 0;
             window.scrollTo(0, 0);
         }
     }

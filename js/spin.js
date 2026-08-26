@@ -35,7 +35,14 @@
   async function loadPrizes() {
     try {
       const r = await window.RFTApi?.get('/spin/prizes');
-      if (!r?.success) return;
+
+      // Show actual error so we can debug
+      if (!r?.success) {
+        const subEl = document.getElementById('spinSubText');
+        if (subEl) subEl.textContent = 'Error: ' + (r?.message || 'API call failed');
+        console.error('Spin prizes failed:', r);
+        return;
+      }
       _prizes   = r.data.prizes || [];
       _canSpin  = r.data.can_spin;
 
@@ -66,6 +73,8 @@
       }
     } catch (e) {
       console.error('loadPrizes error:', e);
+      const subEl = document.getElementById('spinSubText');
+      if (subEl) subEl.textContent = 'Error loading prizes: ' + e.message;
     }
   }
 

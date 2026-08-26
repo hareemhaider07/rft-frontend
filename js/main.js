@@ -99,16 +99,40 @@
   async function handleForgot() {
     const val = document.getElementById('forgotEmail')?.value?.trim();
     if (!val) { window.RFTCore?.showToast('Enter your email or phone', 'error'); return; }
-    const btn = document.querySelector('#forgotPage .btn-primary');
+    const btn = document.getElementById('forgotSendBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
     try {
       const r = await window.RFTApi?.post('/auth/forgot-password', { email_or_phone: val });
       if (r?.success) {
+        // Show step 2
         document.getElementById('forgotStep1').style.display = 'none';
         document.getElementById('forgotStep2').style.display = 'block';
-        window.RFTCore?.showToast('Reset code generated. Check with admin if no SMS.', 'success');
-        // dev mode: show OTP in toast
-        if (r.debug_otp) window.RFTCore?.showToast(`Dev OTP: ${r.debug_otp}`, 'info');
+
+        // Update delivery banner
+        const banner = document.getElementById('otpDeliveryBanner');
+        const text   = document.getElementById('otpDeliveryText');
+        if (banner && text) {
+          if (r.delivery === 'email') {
+            banner.className = 'otp-delivery-banner otp-delivery-email';
+            text.textContent = `Code sent to your email ${r.delivered_to}`;
+          } else if (r.delivery === 'sms') {
+            banner.className = 'otp-delivery-banner otp-delivery-sms';
+            text.textContent = `Code sent via SMS to ${r.delivered_to}`;
+          } else {
+            banner.className = 'otp-delivery-banner otp-delivery-fallback';
+            text.textContent = 'Code generated — check with admin if SMS/email not received';
+          }
+        }
+
+        // Show debug OTP in toast if dev mode returns it
+        if (r.debug_otp) {
+          window.RFTCore?.showToast(`Dev OTP: ${r.debug_otp}`, 'info');
+        }
+
+        // Start 60s countdown for resend button
+        startResendCountdown(60);
+
+        window.RFTCore?.showToast(r.message || 'Reset code sent!', 'success');
       } else {
         window.RFTCore?.showToast(r?.message || 'Request failed', 'error');
       }
@@ -119,25 +143,67 @@
     }
   }
 
+  async function handleResendOtp() {
+    const val = document.getElementById('forgotEmail')?.value?.trim();
+    if (!val) return;
+    const btn = document.getElementById('otpResendBtn');
+    if (btn) btn.disabled = true;
+    try {
+      const r = await window.RFTApi?.post('/auth/forgot-password', { email_or_phone: val });
+      if (r?.success) {
+        window.RFTCore?.showToast(r.message || 'New code sent!', 'success');
+        if (r.debug_otp) window.RFTCore?.showToast(`Dev OTP: ${r.debug_otp}`, 'info');
+        startResendCountdown(60);
+      } else {
+        window.RFTCore?.showToast(r?.message || 'Failed to resend', 'error');
+        startResendCountdown(30);
+      }
+    } catch (_) {
+      window.RFTCore?.showToast('Server error', 'error');
+      startResendCountdown(30);
+    }
+  }
+
+  let _countdownTimer = null;
+  function startResendCountdown(seconds) {
+    const btn       = document.getElementById('otpResendBtn');
+    const countdown = document.getElementById('otpCountdown');
+    if (!btn || !countdown) return;
+    btn.disabled = true;
+    clearInterval(_countdownTimer);
+    let remaining = seconds;
+    countdown.textContent = remaining;
+    _countdownTimer = setInterval(() => {
+      remaining--;
+      countdown.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(_countdownTimer);
+        btn.disabled = false;
+        btn.innerHTML = 'Resend code';
+      }
+    }, 1000);
+  }
+
   async function handleResetPassword() {
     const emailOrPhone = document.getElementById('forgotEmail')?.value?.trim();
     const otp          = document.getElementById('forgotOtp')?.value?.trim();
     const newPwd       = document.getElementById('forgotNewPwd')?.value;
     if (!otp || otp.length !== 6) { window.RFTCore?.showToast('Enter the 6-digit code', 'error'); return; }
     if (!newPwd || newPwd.length < 6) { window.RFTCore?.showToast('Password must be at least 6 characters', 'error'); return; }
-    const btn = document.querySelector('#forgotStep2 .btn-primary');
+    const btn = document.getElementById('forgotResetBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Resetting…'; }
     try {
       const r = await window.RFTApi?.post('/auth/reset-password', {
         email_or_phone: emailOrPhone, otp, new_password: newPwd
       });
       if (r?.success) {
-        window.RFTCore?.showToast('Password reset! Please login.', 'success');
-        // reset form state
+        window.RFTCore?.showToast('Password reset successfully! Please login.', 'success');
+        // Reset form state
+        clearInterval(_countdownTimer);
         document.getElementById('forgotStep2').style.display = 'none';
         document.getElementById('forgotStep1').style.display = 'block';
-        document.getElementById('forgotEmail').value = '';
-        document.getElementById('forgotOtp').value = '';
+        document.getElementById('forgotEmail').value  = '';
+        document.getElementById('forgotOtp').value    = '';
         document.getElementById('forgotNewPwd').value = '';
         setTimeout(() => navigate('loginPage'), 1200);
       } else {
@@ -148,6 +214,41 @@
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
     }
+  }
+
+  // OTP input formatting — auto-advance and spacing
+  function handleOtpInput(input) {
+    let val = input.value.replace(/\D/g, '').slice(0, 6);
+    input.value = val;
+    // Auto-submit when 6 digits entered
+    if (val.length === 6) {
+      document.getElementById('forgotNewPwd')?.focus();
+    }
+    // Show password strength when typing new password
+    const pwdInput = document.getElementById('forgotNewPwd');
+    if (pwdInput) {
+      pwdInput.addEventListener('input', updatePwdStrength, { once: false });
+    }
+  }
+
+  function updatePwdStrength() {
+    const pwd  = document.getElementById('forgotNewPwd')?.value || '';
+    const wrap = document.getElementById('pwdStrengthWrap');
+    const fill = document.getElementById('pwdStrengthFill');
+    const lbl  = document.getElementById('pwdStrengthLabel');
+    if (!wrap || !fill || !lbl) return;
+    if (!pwd) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasNum   = /[0-9]/.test(pwd);
+    const hasSpec  = /[^A-Za-z0-9]/.test(pwd);
+    const score    = [pwd.length >= 8, hasUpper, hasNum, hasSpec].filter(Boolean).length;
+    const levels   = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors   = ['', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+    fill.style.width      = (score * 25) + '%';
+    fill.style.background = colors[score] || '#888';
+    lbl.textContent       = levels[score] || '';
+    lbl.style.color       = colors[score] || '#888';
   }
 
   async function handleLogout() {
@@ -233,7 +334,9 @@
     window.handleLogin          = handleLogin;
     window.handleRegister       = handleRegister;
     window.handleForgot         = handleForgot;
+    window.handleResendOtp      = handleResendOtp;
     window.handleResetPassword  = handleResetPassword;
+    window.handleOtpInput       = handleOtpInput;
     window.handleLogout         = handleLogout;
     window.RFTApp               = { ...window.RFTApp, navigate };
   }

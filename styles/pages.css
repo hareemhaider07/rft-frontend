@@ -703,3 +703,55 @@
 .skel-name   { width: 90px; height: 14px; margin-bottom: 6px; }
 .skel-vip    { width: 48px; height: 10px; }
 .skel-score  { width: 60px; height: 16px; }
+
+/* ============================================================
+   Password Reset / Forgot Page
+   ============================================================ */
+
+/* Delivery status banner */
+.otp-delivery-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 12px; margin-bottom: 18px;
+  font-size: 13px; font-weight: 500;
+}
+.otp-delivery-banner i { font-size: 18px; flex-shrink: 0; }
+.otp-delivery-email {
+  background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25); color: #3b82f6;
+}
+.otp-delivery-sms {
+  background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: #22c55e;
+}
+.otp-delivery-fallback {
+  background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.25); color: #f97316;
+}
+
+/* OTP input */
+.otp-input {
+  font-size: 22px !important; font-weight: 800 !important;
+  letter-spacing: 6px !important; text-align: center !important;
+}
+
+/* Password strength */
+.pwd-strength-wrap {
+  display: flex; align-items: center; gap: 10px; margin: -8px 0 16px;
+}
+.pwd-strength-bar {
+  flex: 1; height: 4px; background: var(--border-color); border-radius: 2px; overflow: hidden;
+}
+.pwd-strength-fill {
+  height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0;
+}
+.pwd-strength-label { font-size: 11px; font-weight: 600; min-width: 44px; }
+
+/* Resend row */
+.otp-resend-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-top: 14px; font-size: 13px;
+}
+.otp-resend-label { color: var(--text-muted); }
+.otp-resend-btn {
+  background: none; border: none; color: var(--gold);
+  font-size: 13px; font-weight: 500; cursor: pointer; padding: 0;
+}
+.otp-resend-btn:disabled { color: var(--text-muted); cursor: not-allowed; }
+.otp-resend-btn:not(:disabled):hover { text-decoration: underline; }

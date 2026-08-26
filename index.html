@@ -137,36 +137,72 @@
             </div>
             <div class="form-card">
                 <h2 class="form-title">Reset Password</h2>
-                <p class="form-subtitle">Enter your email or phone to receive a reset code</p>
+                <p class="form-subtitle">Enter your registered email or phone number</p>
+
+                <!-- Step 1: Request OTP -->
                 <div id="forgotStep1">
                     <div class="input-group">
                         <label class="input-label">Email or Phone</label>
                         <div class="input-wrapper">
                             <i class="ph-bold ph-envelope input-icon"></i>
-                            <input type="text" class="form-input" id="forgotEmail" placeholder="Enter email or phone">
+                            <input type="text" class="form-input" id="forgotEmail"
+                                   placeholder="e.g. user@email.com or 03001234567">
                         </div>
                     </div>
-                    <button class="btn-primary" onclick="handleForgot()">Send Reset Code</button>
+                    <button class="btn-primary" id="forgotSendBtn" onclick="handleForgot()">Send Reset Code</button>
                 </div>
+
+                <!-- Step 2: Enter OTP + new password -->
                 <div id="forgotStep2" style="display:none">
-                    <p class="form-subtitle" style="color:#22c55e">Reset code sent! Enter it below.</p>
+                    <!-- Delivery status banner -->
+                    <div class="otp-delivery-banner" id="otpDeliveryBanner">
+                        <i class="ph-bold ph-paper-plane-right"></i>
+                        <span id="otpDeliveryText">Reset code sent</span>
+                    </div>
+
                     <div class="input-group">
                         <label class="input-label">6-Digit Reset Code</label>
                         <div class="input-wrapper">
                             <i class="ph-bold ph-key input-icon"></i>
-                            <input type="text" class="form-input" id="forgotOtp" placeholder="Enter 6-digit code" maxlength="6">
+                            <input type="text" class="form-input otp-input" id="forgotOtp"
+                                   placeholder="• • • • • •" maxlength="6"
+                                   oninput="handleOtpInput(this)"
+                                   onkeydown="if(event.key==='Enter') handleResetPassword()">
                         </div>
                     </div>
+
                     <div class="input-group">
                         <label class="input-label">New Password</label>
                         <div class="input-wrapper">
                             <i class="ph-bold ph-lock input-icon"></i>
-                            <input type="password" class="form-input" id="forgotNewPwd" placeholder="Min 6 characters">
-                            <button class="toggle-password" onclick="togglePwd('forgotNewPwd', this)"><i class="ph-bold ph-eye"></i></button>
+                            <input type="password" class="form-input" id="forgotNewPwd"
+                                   placeholder="Minimum 6 characters"
+                                   onkeydown="if(event.key==='Enter') handleResetPassword()">
+                            <button class="toggle-password" onclick="togglePwd('forgotNewPwd', this)">
+                                <i class="ph-bold ph-eye"></i>
+                            </button>
                         </div>
                     </div>
-                    <button class="btn-primary" onclick="handleResetPassword()">Reset Password</button>
+
+                    <!-- Password strength indicator -->
+                    <div class="pwd-strength-wrap" id="pwdStrengthWrap" style="display:none">
+                        <div class="pwd-strength-bar">
+                            <div class="pwd-strength-fill" id="pwdStrengthFill"></div>
+                        </div>
+                        <span class="pwd-strength-label" id="pwdStrengthLabel"></span>
+                    </div>
+
+                    <button class="btn-primary" id="forgotResetBtn" onclick="handleResetPassword()">Reset Password</button>
+
+                    <!-- Resend row -->
+                    <div class="otp-resend-row">
+                        <span class="otp-resend-label" id="otpResendLabel">Didn't receive it?</span>
+                        <button class="otp-resend-btn" id="otpResendBtn" onclick="handleResendOtp()" disabled>
+                            Resend code (<span id="otpCountdown">60</span>s)
+                        </button>
+                    </div>
                 </div>
+
                 <div class="form-footer">
                     <p><span class="form-link" onclick="RFTApp.navigate('loginPage')">Back to Login</span></p>
                 </div>

@@ -7,7 +7,7 @@
 
   const PROTECTED_PAGES = ['homePage','tasksPage','walletPage','rechargePage','withdrawPage',
     'vipPage','referralPage','earningsPage','notificationsPage','newsCenterPage',
-    'luckyPage','mypagePage','personalInfoPage'];
+    'mypagePage','personalInfoPage','luckyPage'];
 
   // ── Page navigation ────────────────────────────────────────────────────────
   function navigate(pageId) {

@@ -220,9 +220,9 @@
                     <div class="feature-icon orange"><i class="ph-bold ph-crown"></i></div>
                     <span class="feature-label">VIP</span>
                 </div>
-                <div class="feature-item" onclick="RFTApp.navigate('luckyPage')">
-                    <div class="feature-icon pink"><i class="ph-bold ph-clover"></i></div>
-                    <span class="feature-label">Lucky</span>
+                <div class="feature-item" onclick="RFTApp.navigate('referralPage')">
+                    <div class="feature-icon pink"><i class="ph-bold ph-users-three"></i></div>
+                    <span class="feature-label">Referral</span>
                 </div>
                 <div class="feature-item" onclick="RFTApp.navigate('notificationsPage')">
                     <div class="feature-icon cyan"><i class="ph-bold ph-bell"></i></div>
@@ -231,6 +231,10 @@
                 <div class="feature-item" onclick="RFTApp.navigate('earningsPage')">
                     <div class="feature-icon"><i class="ph-bold ph-chart-line-up"></i></div>
                     <span class="feature-label">Earnings</span>
+                </div>
+                <div class="feature-item" onclick="RFTApp.navigate('luckyPage')">
+                    <div class="feature-icon gold-spin"><i class="ph-bold ph-shooting-star"></i></div>
+                    <span class="feature-label">Lucky Draw</span>
                 </div>
             </div>
             <!-- Task Hall -->
@@ -253,40 +257,6 @@
             </section>
             <!-- Member Rankings -->
             <section class="rft-video-member-rank" id="rftVideoMemberRank"></section>
-        </div>
-
-        <!-- ═══════════ LUCKY DRAW ═══════════ -->
-        <div class="page lucky-page" id="luckyPage">
-            <div class="page-header">
-                <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
-                <h2>Lucky Draw</h2>
-            </div>
-            <div class="lucky-subtitle">Spin once per day to win USDT & Points</div>
-
-            <!-- Spin status badge -->
-            <div class="lucky-status-bar" id="luckyStatusBar">
-                <div class="lsb-loading">Loading…</div>
-            </div>
-
-            <!-- Wheel container -->
-            <div class="lucky-wheel-wrap">
-                <div class="lucky-wheel-pointer"><i class="ph-bold ph-caret-down"></i></div>
-                <canvas id="luckyWheelCanvas" width="300" height="300"></canvas>
-            </div>
-
-            <!-- Spin button -->
-            <div class="lucky-spin-btn-wrap">
-                <button class="lucky-spin-btn" id="luckySpinBtn" onclick="spinWheel()">
-                    <i class="ph-bold ph-shuffle"></i> SPIN NOW
-                </button>
-            </div>
-
-            <!-- Result card -->
-            <div class="lucky-result-card" id="luckyResultCard" style="display:none"></div>
-
-            <!-- History -->
-            <div class="section-title">Recent Spins</div>
-            <div class="lucky-history" id="luckyHistory"></div>
         </div>
 
         <!-- ═══════════ TASKS ═══════════ -->
@@ -613,6 +583,65 @@
             </div>
         </nav>
 
+        <!-- ═══════════ LUCKY DRAW ═══════════ -->
+        <div class="page lucky-page" id="luckyPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
+                <h2>Lucky Draw</h2>
+            </div>
+
+            <!-- Spins remaining badge -->
+            <div class="spin-status-bar" id="spinStatusBar">
+                <div class="ssb-left">
+                    <i class="ph-bold ph-shooting-star"></i>
+                    <div>
+                        <div class="ssb-title">Daily Spins</div>
+                        <div class="ssb-sub" id="spinSubText">Loading…</div>
+                    </div>
+                </div>
+                <div class="ssb-right">
+                    <span class="ssb-count" id="spinCountBadge">—</span>
+                    <span class="ssb-label">left</span>
+                </div>
+            </div>
+
+            <!-- Wheel container -->
+            <div class="spin-wheel-wrap">
+                <!-- Pointer arrow at top -->
+                <div class="spin-pointer">▼</div>
+                <!-- Canvas wheel -->
+                <canvas id="spinCanvas" width="320" height="320"></canvas>
+                <!-- Center button -->
+                <button class="spin-center-btn" id="spinBtn" onclick="RFTSpin.doSpin()">
+                    <i class="ph-bold ph-shooting-star"></i>
+                    <span>SPIN</span>
+                </button>
+            </div>
+
+            <!-- Prize result card (hidden until spin) -->
+            <div class="spin-result-card" id="spinResultCard" style="display:none">
+                <div class="src-icon" id="srcIcon">🎁</div>
+                <div class="src-title" id="srcTitle">You won!</div>
+                <div class="src-value" id="srcValue">—</div>
+                <div class="src-sub"   id="srcSub"></div>
+                <button class="btn-primary" onclick="RFTSpin.dismissResult()">Collect</button>
+            </div>
+
+            <!-- Prize list -->
+            <div class="spin-prizes-wrap">
+                <div class="section-title">Prize Pool</div>
+                <div class="spin-prize-grid" id="spinPrizeGrid"></div>
+            </div>
+
+            <!-- Spin history -->
+            <div class="spin-history-wrap">
+                <div class="section-title">My Spin History</div>
+                <div class="spin-history-list" id="spinHistoryList">
+                    <div class="tx-loading">Loading history…</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ═══════════ FLOATING BUTTONS ═══════════ -->
         <div class="floating-buttons" id="floatingButtons">
             <a href="https://wa.me/923XXXXXXXXX" target="_blank" class="fab whatsapp">
@@ -701,7 +730,7 @@
     <script src="js/vip.js"></script>
     <script src="js/referral.js"></script>
     <script src="js/notifications.js"></script>
-    <script src="js/lucky.js"></script>
+    <script src="js/spin.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

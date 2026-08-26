@@ -335,6 +335,9 @@
       <div class="nav-item" onclick="showSection('announcements')">
         <i class="ph-bold ph-megaphone"></i> Announcements
       </div>
+      <div class="nav-item" onclick="showSection('spinPrizes')">
+        <i class="ph-bold ph-shooting-star"></i> Lucky Draw
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="admin-info">
@@ -508,6 +511,35 @@
       <div class="vip-grid" id="pmGrid"><div class="loading">Loading…</div></div>
     </div>
 
+    <!-- ── SPIN PRIZES ── -->
+    <div class="section" id="sec-spinPrizes">
+      <div class="page-title"><i class="ph-bold ph-shooting-star"></i> Lucky Draw Prizes</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+        <div class="stat-card"><div class="stat-label">Total Spins Today</div><div class="stat-value gold" id="ss-today">—</div></div>
+        <div class="stat-card"><div class="stat-label">USDT Paid Out Today</div><div class="stat-value green" id="ss-usdt">—</div></div>
+        <div class="stat-card"><div class="stat-label">Points Paid Today</div><div class="stat-value blue" id="ss-pts">—</div></div>
+      </div>
+      <div class="tx-tabs" style="padding:0 0 16px">
+        <button class="tx-tab active" onclick="loadSpinPrizes(0,this)">VIP 0</button>
+        <button class="tx-tab" onclick="loadSpinPrizes(1,this)">VIP 1+</button>
+        <button class="tx-tab" onclick="loadSpinPrizes(3,this)">VIP 3+</button>
+      </div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openAddPrize()"><i class="ph-bold ph-plus"></i> Add Prize</button>
+      </div>
+      <div class="table-card">
+        <table><thead><tr><th>Color</th><th>Name</th><th>Type</th><th>Value</th><th>Probability</th><th>Min VIP</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody id="spinPrizesBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
+      </div>
+      <div style="margin-top:24px">
+        <div class="page-title" style="font-size:16px;margin-bottom:12px"><i class="ph-bold ph-clock"></i> Recent Spin History</div>
+        <div class="table-card">
+          <table><thead><tr><th>User</th><th>Prize</th><th>Type</th><th>Value</th><th>Date</th></tr></thead>
+          <tbody id="adminSpinHistBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
     <!-- ── ANNOUNCEMENTS ── -->
     <div class="section" id="sec-announcements">
       <div class="page-title"><i class="ph-bold ph-megaphone"></i> Announcements</div>
@@ -646,6 +678,38 @@
   </div>
 </div>
 
+<!-- Spin Prize Modal -->
+<div class="modal-overlay" id="spinPrizeModal">
+  <div class="modal">
+    <div class="modal-title"><span id="spinPrizeModalTitle">Add Prize</span><span class="modal-close" onclick="closeModal('spinPrizeModal')">✕</span></div>
+    <input type="hidden" id="spmId">
+    <div class="modal-field"><label>Name *</label><input type="text" id="spmName" placeholder="e.g. 0.10 USDT"></div>
+    <div class="two-col">
+      <div class="modal-field"><label>Type *</label>
+        <select id="spmType"><option value="usdt">USDT</option><option value="points">Points</option><option value="empty">Try Again</option></select>
+      </div>
+      <div class="modal-field"><label>Value</label><input type="number" id="spmValue" step="0.0001" placeholder="0.10"></div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>Probability (0.15 = 15%)</label><input type="number" id="spmProb" step="0.0001" placeholder="0.1500"></div>
+      <div class="modal-field"><label>Min VIP Level</label>
+        <select id="spmVip"><option value="0">VIP 0</option><option value="1">VIP 1</option><option value="3">VIP 3</option></select>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="modal-field"><label>Color</label><input type="color" id="spmColor" value="#d4a843" style="height:38px;padding:2px;width:100%"></div>
+      <div class="modal-field"><label>Display Order</label><input type="number" id="spmOrder" value="0"></div>
+    </div>
+    <div class="modal-field"><label>Active</label>
+      <select id="spmActive"><option value="true">Yes</option><option value="false">No</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal('spinPrizeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSpinPrize()">Save Prize</button>
+    </div>
+  </div>
+</div>
+
 <!-- Announcement Modal -->
 <div class="modal-overlay" id="annModal">
   <div class="modal">
@@ -751,7 +815,8 @@ function showSection(name) {
   const loaders = {
     dashboard: loadDashboard, deposits: loadDeposits, withdrawals: loadWithdrawals,
     transactions: loadAllTx, users: loadUsers, kyc: loadKyc,
-    tasks: loadTasks, vip: loadVip, paymentMethods: loadPm, announcements: loadAnnouncements
+    tasks: loadTasks, vip: loadVip, paymentMethods: loadPm, announcements: loadAnnouncements,
+    spinPrizes: () => loadSpinPrizes(0)
   };
   if (loaders[name]) loaders[name]();
 }
@@ -1227,6 +1292,119 @@ async function toggleAnn(id, active) {
   await apiFetch(`/admin/announcements/${id}`, 'PUT', { is_active: active });
   toast(active ? 'Announcement enabled' : 'Announcement disabled', 'success');
   loadAnnouncements();
+}
+
+// ── Spin Prizes ───────────────────────────────────────────────────────────────
+let _currentSpinVip = 0;
+
+async function loadSpinPrizes(vipLevel, tabEl) {
+  _currentSpinVip = vipLevel ?? 0;
+  if (tabEl) {
+    document.querySelectorAll('#sec-spinPrizes .tx-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+  }
+
+  // load stats
+  try {
+    const s = await apiFetch('/admin/spin/stats');
+    if (s.success) {
+      const el1 = document.getElementById('ss-today');
+      const el2 = document.getElementById('ss-usdt');
+      const el3 = document.getElementById('ss-pts');
+      if (el1) el1.textContent = s.data.total_spins_today;
+      if (el2) el2.textContent = s.data.usdt_paid_today + ' USDT';
+      if (el3) el3.textContent = s.data.points_paid_today;
+    }
+  } catch(_) {}
+
+  // load prizes for this vip tier
+  const d = await apiFetch(`/admin/spin/prizes?vip=${_currentSpinVip}`);
+  if (!d.success) return;
+  const body = document.getElementById('spinPrizesBody');
+  body.innerHTML = d.data.map(p => `
+    <tr>
+      <td><div style="width:22px;height:22px;border-radius:50%;background:${p.color};display:inline-block;vertical-align:middle"></div></td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-pending">${p.prize_type}</span></td>
+      <td>${p.prize_value}</td>
+      <td>${(parseFloat(p.probability)*100).toFixed(1)}%</td>
+      <td>${fmtVip(p.min_vip_level)}</td>
+      <td>${p.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+      <td>
+        <button class="btn btn-edit btn-sm" onclick="openEditPrize(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleSpinPrize('${p.id}',${!p.is_active})">${p.is_active?'Disable':'Enable'}</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" class="empty">No prizes</td></tr>';
+
+  // load history
+  const h = await apiFetch('/admin/spin/history');
+  if (h.success) {
+    const hbody = document.getElementById('adminSpinHistBody');
+    if (hbody) hbody.innerHTML = h.data.map(s => `
+      <tr>
+        <td>${s.user_name||'—'}<br><small style="color:var(--muted)">${s.user_phone||''}</small></td>
+        <td>${s.prize_name}</td>
+        <td><span class="badge badge-pending">${s.prize_type}</span></td>
+        <td>${s.prize_type!=='empty' ? s.prize_value : '—'}</td>
+        <td>${fmtDate(s.created_at)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" class="empty">No spins yet</td></tr>';
+  }
+}
+
+function openAddPrize() {
+  document.getElementById('spinPrizeModalTitle').textContent = 'Add Prize';
+  document.getElementById('spmId').value    = '';
+  document.getElementById('spmName').value  = '';
+  document.getElementById('spmType').value  = 'usdt';
+  document.getElementById('spmValue').value = '';
+  document.getElementById('spmProb').value  = '';
+  document.getElementById('spmVip').value   = _currentSpinVip;
+  document.getElementById('spmColor').value = '#d4a843';
+  document.getElementById('spmOrder').value = '0';
+  document.getElementById('spmActive').value= 'true';
+  openModal('spinPrizeModal');
+}
+
+function openEditPrize(p) {
+  document.getElementById('spinPrizeModalTitle').textContent = 'Edit Prize';
+  document.getElementById('spmId').value    = p.id;
+  document.getElementById('spmName').value  = p.name;
+  document.getElementById('spmType').value  = p.prize_type;
+  document.getElementById('spmValue').value = p.prize_value;
+  document.getElementById('spmProb').value  = p.probability;
+  document.getElementById('spmVip').value   = p.min_vip_level;
+  document.getElementById('spmColor').value = p.color;
+  document.getElementById('spmOrder').value = p.display_order;
+  document.getElementById('spmActive').value= p.is_active ? 'true' : 'false';
+  openModal('spinPrizeModal');
+}
+
+async function submitSpinPrize() {
+  const id = document.getElementById('spmId').value;
+  const body = {
+    name:          document.getElementById('spmName').value,
+    prize_type:    document.getElementById('spmType').value,
+    prize_value:   parseFloat(document.getElementById('spmValue').value) || 0,
+    probability:   parseFloat(document.getElementById('spmProb').value),
+    min_vip_level: parseInt(document.getElementById('spmVip').value),
+    color:         document.getElementById('spmColor').value,
+    display_order: parseInt(document.getElementById('spmOrder').value),
+    is_active:     document.getElementById('spmActive').value === 'true'
+  };
+  if (!body.name || isNaN(body.probability)) { toast('Fill all required fields', 'error'); return; }
+  const d = id
+    ? await apiFetch(`/admin/spin/prizes/${id}`, 'PUT', body)
+    : await apiFetch('/admin/spin/prizes', 'POST', body);
+  if (d.success) { toast(id ? 'Prize updated' : 'Prize added', 'success'); closeModal('spinPrizeModal'); loadSpinPrizes(_currentSpinVip); }
+  else toast(d.message || 'Failed', 'error');
+}
+
+async function toggleSpinPrize(id, active) {
+  const d = await apiFetch(`/admin/spin/prizes/${id}`, 'PUT', { is_active: active });
+  if (d.success) { toast(active ? 'Prize enabled' : 'Prize disabled', 'success'); loadSpinPrizes(_currentSpinVip); }
+  else toast(d.message || 'Failed', 'error');
 }
 
 // ── Pagination helper ─────────────────────────────────────────────────────────

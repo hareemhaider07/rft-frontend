@@ -1,23 +1,23 @@
-<svg viewBox="0 0 280 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- RFT — large serif weight -->
-  <text x="0" y="46"
+<svg viewBox="0 0 260 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- RFT — dark, serif weight -->
+  <text x="0" y="44"
         font-family="Georgia, 'Times New Roman', serif"
-        font-size="48" font-weight="700"
-        fill="#F5F0E8"
+        font-size="44" font-weight="700"
+        fill="#1A1A1A"
         letter-spacing="-1">RFT</text>
 
-  <!-- Thin divider line between RFT and Entertainment -->
-  <rect x="102" y="12" width="1.5" height="40" rx="0.75" fill="#6F2832" opacity="0.7"/>
+  <!-- Thin gold divider -->
+  <rect x="96" y="10" width="2" height="38" rx="1" fill="#B8860B" opacity="0.6"/>
 
-  <!-- Entertainment — light weight, spaced caps -->
-  <text x="114" y="30"
+  <!-- ENTERTAINMENT — gold, spaced caps -->
+  <text x="108" y="28"
         font-family="'Inter', system-ui, sans-serif"
-        font-size="9.5" font-weight="500"
-        fill="#C4973A"
+        font-size="9" font-weight="600"
+        fill="#B8860B"
         letter-spacing="4">ENTERTAIN</text>
-  <text x="114" y="46"
+  <text x="108" y="44"
         font-family="'Inter', system-ui, sans-serif"
-        font-size="9.5" font-weight="500"
-        fill="#C4973A"
+        font-size="9" font-weight="600"
+        fill="#B8860B"
         letter-spacing="4">MENT</text>
 </svg>

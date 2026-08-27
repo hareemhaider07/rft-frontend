@@ -1,25 +1,24 @@
 /* ============================================================
-   RFT Entertainment — Themes v3
-   Quiet Luxury design — accent overrides and special states
+   RFT Entertainment — Themes v3 (Light)
    ============================================================ */
 
-/* ── VIP badge color variants ─────────────────────────────── */
-.badge-vip0 { background: rgba(119,119,103,.12); color: var(--olive); }
-.badge-vip1 { background: rgba(184,105,72,.12);  color: #C87850; }
-.badge-vip2 { background: rgba(180,180,180,.12); color: #C8C8C8; }
-.badge-vip3 { background: rgba(196,151,58,.12);  color: var(--gold); }
-.badge-vip4 { background: rgba(200,210,220,.1);  color: #B0C0CC; }
-.badge-vip5 { background: rgba(78,119,114,.12);  color: #7BBAB5; }
-
-/* ── Transaction badges ────────────────────────────────────── */
+/* ── Badges ────────────────────────────────────────────────── */
 .badge {
   display: inline-block; padding: 2px 9px; border-radius: 20px;
   font-size: 11px; font-weight: 600;
 }
-.badge-pending   { background: rgba(196,151,58,.12); color: var(--gold); }
-.badge-completed { background: rgba(91,140,90,.12);  color: #7BBB7A; }
-.badge-failed    { background: rgba(176,64,64,.12);  color: #D08080; }
-.badge-active    { background: rgba(91,140,90,.12);  color: #7BBB7A; }
-.badge-inactive  { background: rgba(119,119,103,.1); color: var(--olive); }
-.badge-verified  { background: rgba(91,140,90,.12);  color: #7BBB7A; }
-.badge-rejected  { background: rgba(176,64,64,.12);  color: #D08080; }
+.badge-pending   { background: #FFF8E7; color: #B8860B; }
+.badge-completed { background: #E8F5EE; color: #1A7F4B; }
+.badge-failed    { background: #FEF0EE; color: #C0392B; }
+.badge-active    { background: #E8F5EE; color: #1A7F4B; }
+.badge-inactive  { background: #F4F2EE; color: #999990; }
+.badge-verified  { background: #E8F5EE; color: #1A7F4B; }
+.badge-rejected  { background: #FEF0EE; color: #C0392B; }
+
+/* ── VIP variants ──────────────────────────────────────────── */
+.badge-vip0 { background: #F4F2EE; color: #999990; }
+.badge-vip1 { background: #FFF5EA; color: #C87850; }
+.badge-vip2 { background: #F4F4F4; color: #888888; }
+.badge-vip3 { background: #FFF8E7; color: #B8860B; }
+.badge-vip4 { background: #EEF6FF; color: #5080A0; }
+.badge-vip5 { background: #EEFBF8; color: #1A8070; }

@@ -110,6 +110,149 @@
     }).join('');
   }
 
+  // ── Video URL → embed URL converter ──────────────────────────────────────
+  function getEmbedUrl(videoUrl, taskType) {
+    if (!videoUrl || videoUrl === '#') return null;
+
+    try {
+      // ── YouTube ──
+      if (taskType === 'youtube' || videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+        let videoId = null;
+        // youtu.be/ID
+        const shortMatch = videoUrl.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+        if (shortMatch) videoId = shortMatch[1];
+        // youtube.com/watch?v=ID
+        const longMatch = videoUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+        if (longMatch) videoId = longMatch[1];
+        // youtube.com/embed/ID
+        const embedMatch = videoUrl.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+        if (embedMatch) videoId = embedMatch[1];
+        // youtube.com/shorts/ID
+        const shortsMatch = videoUrl.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+        if (shortsMatch) videoId = shortsMatch[1];
+
+        if (videoId) {
+          return {
+            type:   'iframe',
+            url:    `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`,
+            canEmbed: true
+          };
+        }
+      }
+
+      // ── Facebook video ──
+      if (taskType === 'facebook' || videoUrl.includes('facebook.com')) {
+        return {
+          type:    'iframe',
+          url:     `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoUrl)}&autoplay=true&show_text=false&width=500`,
+          canEmbed: true
+        };
+      }
+
+      // ── TikTok — cannot be embedded, use in-app overlay ──
+      if (taskType === 'tiktok' || videoUrl.includes('tiktok.com')) {
+        return { type: 'overlay', url: videoUrl, canEmbed: false };
+      }
+
+      // ── Instagram — cannot be embedded, use in-app overlay ──
+      if (taskType === 'instagram' || videoUrl.includes('instagram.com')) {
+        return { type: 'overlay', url: videoUrl, canEmbed: false };
+      }
+
+      // ── Twitter/X ──
+      if (taskType === 'twitter' || videoUrl.includes('twitter.com') || videoUrl.includes('x.com')) {
+        return { type: 'overlay', url: videoUrl, canEmbed: false };
+      }
+
+      // ── Default — overlay ──
+      return { type: 'overlay', url: videoUrl, canEmbed: false };
+    } catch (_) {
+      return { type: 'overlay', url: videoUrl, canEmbed: false };
+    }
+  }
+
+  // ── In-app browser overlay for non-embeddable platforms ───────────────────
+  function showInAppBrowser(url, title, onClose) {
+    // Create overlay if not exists
+    let overlay = document.getElementById('inAppBrowserOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'inAppBrowserOverlay';
+      overlay.className = 'in-app-browser';
+      overlay.innerHTML = `
+        <div class="iab-header">
+          <div class="iab-title" id="iabTitle"></div>
+          <div class="iab-actions">
+            <a id="iabOpenExternal" target="_blank" class="iab-btn">
+              <i class="ph-bold ph-arrow-square-out"></i>
+            </a>
+            <button class="iab-btn" onclick="window.closeInAppBrowser()">
+              <i class="ph-bold ph-x"></i>
+            </button>
+          </div>
+        </div>
+        <iframe id="iabFrame" src="" allowfullscreen></iframe>
+        <div class="iab-overlay-msg" id="iabOverlayMsg">
+          <i class="ph-bold ph-warning"></i>
+          <p>This platform blocks embedding. The page has been opened externally.</p>
+          <small>Come back to this screen — the timer is still running!</small>
+        </div>
+      `;
+      document.querySelector('.main-container').appendChild(overlay);
+    }
+
+    document.getElementById('iabTitle').textContent = title;
+    document.getElementById('iabOpenExternal').href  = url;
+
+    const frame   = document.getElementById('iabFrame');
+    const msg     = document.getElementById('iabOverlayMsg');
+    const iabOverlay = document.getElementById('inAppBrowserOverlay');
+
+    // Try to load in iframe — detect if blocked
+    frame.src = '';
+    msg.style.display = 'none';
+    frame.style.display = 'block';
+
+    // Set a timeout — if iframe hasn't loaded content, show message + open externally
+    const loadTimer = setTimeout(() => {
+      try {
+        // If cross-origin blocked, contentDocument will be null or throw
+        const doc = frame.contentDocument;
+        if (!doc || doc.title === '') throw new Error('blocked');
+      } catch (_) {
+        // Platform blocks iframe — open in new tab and show message
+        window.open(url, '_blank');
+        frame.style.display = 'none';
+        msg.style.display   = 'flex';
+      }
+    }, 2000);
+
+    frame.onload = () => {
+      clearTimeout(loadTimer);
+      try {
+        const doc = frame.contentDocument;
+        if (!doc || doc.body?.innerHTML === '') {
+          window.open(url, '_blank');
+          frame.style.display = 'none';
+          msg.style.display   = 'flex';
+        }
+      } catch (_) {
+        // Cross-origin — expected for YouTube etc., iframe is showing
+        clearTimeout(loadTimer);
+      }
+    };
+
+    frame.src = url;
+    iabOverlay.classList.add('show');
+    iabOverlay._onClose = onClose;
+
+    window.closeInAppBrowser = () => {
+      iabOverlay.classList.remove('show');
+      frame.src = '';
+      if (iabOverlay._onClose) iabOverlay._onClose();
+    };
+  }
+
   // ── Task Preview Modal ─────────────────────────────────────────────────────
   async function openTaskPreview(taskId) {
     if (_stats.remaining_today <= 0) {
@@ -124,11 +267,13 @@
     if (!modal) return;
 
     const reward = pkr(task.reward_usdt);
+    const embed  = getEmbedUrl(task.video_url, task.task_type);
+
     modal.innerHTML = `
       <div class="rft-task-preview-content">
         <button class="rft-task-preview-close" onclick="closeTaskPreview()"><i class="ph-bold ph-x"></i></button>
-        <div class="rft-task-preview-video">
-          <img src="${task.thumbnail_url || `https://placehold.co/340x190/1a1a1a/d4a843?text=${task.task_type}`}" alt="${task.title}">
+        <div class="rft-task-preview-video" id="taskVideoWrap">
+          <img src="${task.thumbnail_url || `https://placehold.co/340x190/1a1a1a/d4a843?text=${task.task_type}`}" alt="${task.title}" id="taskThumb">
           <div class="rft-task-preview-overlay" id="taskOverlay">
             <button class="rft-task-preview-play" id="taskPlayBtn" onclick="beginTask('${task.id}')">
               <i class="ph-bold ph-play"></i>
@@ -150,27 +295,50 @@
       </div>
     `;
     modal.classList.add('show');
+    // Store embed info for beginTask
+    modal._embed = embed;
   }
 
   async function beginTask(taskId) {
     const session = await startTask(taskId);
     if (!session) return;
 
+    const modal    = document.getElementById('rftTaskPreview');
+    const embed    = modal?._embed;
+    const videoWrap= document.getElementById('taskVideoWrap');
+    const thumb    = document.getElementById('taskThumb');
+    const overlay  = document.getElementById('taskOverlay');
     const btn      = document.getElementById('taskPlayBtn');
     const progress = document.getElementById('taskProgress');
     const fill     = document.getElementById('taskProgressFill');
     const text     = document.getElementById('taskProgressText');
-    if (btn)      btn.style.display      = 'none';
+
+    if (btn)      btn.style.display = 'none';
+    if (overlay)  overlay.style.display = 'none';
     if (progress) progress.style.display = 'block';
 
     const task     = _tasks.find(t => t.id === taskId);
     const duration = (task?.duration_seconds || 30) * 1000;
     const start    = Date.now();
 
-    if (task?.video_url && task.video_url !== '#') {
-      window.open(task.video_url, '_blank');
+    // ── Inline embed (YouTube / Facebook) ─────────────────────────────────
+    if (embed?.canEmbed) {
+      if (thumb)    thumb.style.display     = 'none';
+      // Replace thumbnail with iframe
+      const iframe = document.createElement('iframe');
+      iframe.src             = embed.url;
+      iframe.allow           = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.className       = 'task-embed-iframe';
+      iframe.style.cssText   = 'width:100%;height:100%;border:none;border-radius:0;position:absolute;inset:0;';
+      videoWrap?.appendChild(iframe);
+    }
+    // ── In-app browser overlay (TikTok / Instagram) ────────────────────────
+    else if (embed?.url) {
+      showInAppBrowser(embed.url, task.title, null);
     }
 
+    // ── Start timer regardless ─────────────────────────────────────────────
     _taskTimer = setInterval(() => {
       const elapsed = Date.now() - start;
       const pct = Math.min(100, (elapsed / duration) * 100);
@@ -178,6 +346,10 @@
       if (text) text.textContent = `Watching… ${Math.ceil((duration - elapsed) / 1000)}s remaining`;
       if (elapsed >= duration) {
         clearInterval(_taskTimer);
+        // Close in-app browser if open
+        if (!embed?.canEmbed && window.closeInAppBrowser) {
+          window.closeInAppBrowser();
+        }
         finishTask(taskId, session.session_id, Math.floor(duration / 1000));
       }
     }, 200);
@@ -201,8 +373,13 @@
 
   function closeTaskPreview() {
     if (_taskTimer) { clearInterval(_taskTimer); _taskTimer = null; }
+    // Close in-app browser if open
+    if (window.closeInAppBrowser) window.closeInAppBrowser();
+    // Remove any injected iframe
+    const iframe = document.querySelector('.task-embed-iframe');
+    if (iframe) iframe.remove();
     const modal = document.getElementById('rftTaskPreview');
-    if (modal) modal.classList.remove('show');
+    if (modal) { modal.classList.remove('show'); modal._embed = null; }
     _activeTaskId = null;
   }
 

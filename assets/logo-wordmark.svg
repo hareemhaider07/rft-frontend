@@ -1,0 +1,23 @@
+<svg viewBox="0 0 320 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon box -->
+  <rect width="72" height="72" rx="16" fill="#1E1E1C"/>
+  <rect width="72" height="72" rx="16" fill="url(#wGrad)" opacity="0.6"/>
+  <rect x="0.75" y="0.75" width="70.5" height="70.5" rx="15.25" stroke="#C4973A" stroke-width="1.5" stroke-opacity="0.35"/>
+  <path d="M26 22 L26 50 L52 36 Z" fill="#C4973A"/>
+  <rect x="14" y="56" width="44" height="2.5" rx="1.25" fill="#6F2832" opacity="0.9"/>
+  
+  <!-- "RFT" large text -->
+  <text x="86" y="38" font-family="Georgia, 'Times New Roman', serif"
+        font-size="32" font-weight="700" fill="#F5F0E8" letter-spacing="-0.5">RFT</text>
+  
+  <!-- "ENTERTAINMENT" small text -->
+  <text x="87" y="56" font-family="'Inter', system-ui, sans-serif"
+        font-size="11" font-weight="500" fill="#C4973A" letter-spacing="3.5">ENTERTAINMENT</text>
+
+  <defs>
+    <linearGradient id="wGrad" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6F2832" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#1E1E1C" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

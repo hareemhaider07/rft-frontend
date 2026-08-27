@@ -335,6 +335,9 @@
       <div class="nav-item" onclick="showSection('announcements')">
         <i class="ph-bold ph-megaphone"></i> Announcements
       </div>
+      <div class="nav-item" onclick="showSection('loginPopups')">
+        <i class="ph-bold ph-chat-circle-text"></i> Login Popup
+      </div>
       <div class="nav-item" onclick="showSection('spinPrizes')">
         <i class="ph-bold ph-shooting-star"></i> Lucky Draw
       </div>
@@ -537,6 +540,19 @@
           <table><thead><tr><th>User</th><th>Prize</th><th>Type</th><th>Value</th><th>Date</th></tr></thead>
           <tbody id="adminSpinHistBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody></table>
         </div>
+      </div>
+    </div>
+
+    <!-- ── LOGIN POPUPS ── -->
+    <div class="section" id="sec-loginPopups">
+      <div class="page-title"><i class="ph-bold ph-chat-circle-text"></i> Login Popup</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Shown to users after login. Only one active popup at a time.</p>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary" onclick="openAddLoginPopup()"><i class="ph-bold ph-plus"></i> Create New Popup</button>
+      </div>
+      <div class="table-card">
+        <table><thead><tr><th>Title</th><th>Content</th><th>Button</th><th>Active</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="loginPopupsBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
       </div>
     </div>
 
@@ -822,7 +838,7 @@ function showSection(name) {
     dashboard: loadDashboard, deposits: loadDeposits, withdrawals: loadWithdrawals,
     transactions: loadAllTx, users: loadUsers, kyc: loadKyc,
     tasks: loadTasks, vip: loadVip, paymentMethods: loadPm, announcements: loadAnnouncements,
-    spinPrizes: () => loadSpinPrizes(0)
+    spinPrizes: () => loadSpinPrizes(0), loginPopups: loadLoginPopups
   };
   if (loaders[name]) loaders[name]();
 }
@@ -1411,6 +1427,40 @@ async function toggleSpinPrize(id, active) {
   const d = await apiFetch(`/admin/spin/prizes/${id}`, 'PUT', { is_active: active });
   if (d.success) { toast(active ? 'Prize enabled' : 'Prize disabled', 'success'); loadSpinPrizes(_currentSpinVip); }
   else toast(d.message || 'Failed', 'error');
+}
+
+// ── Login Popups ──────────────────────────────────────────────────────────────
+async function loadLoginPopups() {
+  const d = await apiFetch('/admin/login-popups');
+  const body = document.getElementById('loginPopupsBody');
+  if (!d.success) { body.innerHTML = '<tr><td colspan="6" class="empty">None yet</td></tr>'; return; }
+  body.innerHTML = (d.data || []).map(p => `
+    <tr>
+      <td><strong>${p.title}</strong></td>
+      <td><small style="color:var(--muted)">${(p.content||'').slice(0,60)}…</small></td>
+      <td>${p.button_text||'Got it'}</td>
+      <td>${p.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="toggleLoginPopup('${p.id}',${!p.is_active})">${p.is_active?'Disable':'Enable'}</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" class="empty">No popups</td></tr>';
+}
+
+function openAddLoginPopup() {
+  const title   = prompt('Popup Title:');
+  if (!title) return;
+  const content = prompt('Popup Content:');
+  if (!content) return;
+  const btnText = prompt('Button Text (default: Got it):') || 'Got it';
+  apiFetch('/admin/login-popups', 'POST', { title, content, button_text: btnText })
+    .then(d => { if (d.success) { toast('Popup created and activated', 'success'); loadLoginPopups(); } else toast(d.message||'Failed','error'); });
+}
+
+async function toggleLoginPopup(id, active) {
+  const d = await apiFetch(`/admin/login-popups/${id}`, 'PUT', { is_active: active });
+  if (d.success) { toast(active ? 'Popup enabled' : 'Popup disabled', 'success'); loadLoginPopups(); }
 }
 
 // ── Pagination helper ─────────────────────────────────────────────────────────

@@ -7,7 +7,8 @@
 
   const PROTECTED_PAGES = ['homePage','tasksPage','walletPage','rechargePage','withdrawPage',
     'vipPage','referralPage','earningsPage','notificationsPage','newsCenterPage',
-    'mypagePage','personalInfoPage','luckyPage','leaderboardPage'];
+    'mypagePage','personalInfoPage','luckyPage','leaderboardPage',
+    'myTasksPage','savedMethodsPage'];
 
   // ── Page navigation ────────────────────────────────────────────────────────
   function navigate(pageId) {
@@ -83,6 +84,12 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Creating account…'; }
     try {
       const payload = { name, email, phone: phone.startsWith('0') ? phone : '0' + phone, password };
+      // Prefix with selected country code if not Pakistan
+      const countryCode = document.getElementById('countryCode')?.value || '+92';
+      if (countryCode !== '+92') {
+        // Store full international number
+        payload.phone = countryCode + phone.replace(/^0/, '');
+      }
       if (refCode) payload.referral_code = refCode;
       const r = await window.RFTApi?.post('/auth/register', payload);
       if (r?.success) {
@@ -352,6 +359,7 @@
     window.handleResetPassword  = handleResetPassword;
     window.handleOtpInput       = handleOtpInput;
     window.handleLogout         = handleLogout;
+    window.updateCountryCode    = (sel) => {}; // no-op, handled in payload
     window.RFTApp               = { ...window.RFTApp, navigate };
   }
 

@@ -66,7 +66,7 @@
     const statusColors = { completed:'#22c55e', pending:'#f97316', failed:'#ef4444' };
     const pkrAmt = tx.amount_pkr ? Number(tx.amount_pkr).toLocaleString('en-PK') : Math.round(parseFloat(tx.amount_usdt) * PKR_RATE).toLocaleString('en-PK');
     return `
-      <div class="transaction-item">
+      <div class="transaction-item" onclick='window.showTxDetail && window.showTxDetail(${JSON.stringify(tx)})' style="cursor:pointer">
         <div class="transaction-icon ${isCredit?'tx-credit':'tx-debit'}">
           <i class="ph-bold ${icons[tx.type]||'ph-arrow-right'}"></i>
         </div>

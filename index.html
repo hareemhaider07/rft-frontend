@@ -96,9 +96,18 @@
                 </div>
                 <div class="input-group">
                     <label class="input-label">Phone</label>
-                    <div class="input-wrapper">
-                        <span class="country-code">+92 🇵🇰</span>
-                        <input type="tel" class="form-input" id="registerPhone" placeholder="3001234567">
+                    <div class="input-wrapper" style="padding:0">
+                        <select id="countryCode" class="country-code-select" onchange="updateCountryCode(this)">
+                            <option value="+92" data-flag="🇵🇰">🇵🇰 +92</option>
+                            <option value="+91" data-flag="🇮🇳">🇮🇳 +91</option>
+                            <option value="+880" data-flag="🇧🇩">🇧🇩 +880</option>
+                            <option value="+971" data-flag="🇦🇪">🇦🇪 +971</option>
+                            <option value="+966" data-flag="🇸🇦">🇸🇦 +966</option>
+                            <option value="+974" data-flag="🇶🇦">🇶🇦 +974</option>
+                            <option value="+44"  data-flag="🇬🇧">🇬🇧 +44</option>
+                            <option value="+1"   data-flag="🇺🇸">🇺🇸 +1</option>
+                        </select>
+                        <input type="tel" class="form-input" id="registerPhone" placeholder="3001234567" style="border-left:1px solid rgba(255,255,255,.08)">
                     </div>
                 </div>
                 <div class="input-group">
@@ -218,6 +227,53 @@
                     <small>VIDEO REWARD PLATFORM</small>
                 </div>
             </div>
+            <!-- Banner Carousel -->
+            <div class="home-banner-carousel" id="homeBannerCarousel">
+                <div class="hbc-track" id="hbcTrack">
+                    <div class="hbc-slide hbc-slide-vip">
+                        <div class="hbc-content">
+                            <div class="hbc-tag">VIP PROGRAM</div>
+                            <h3>Upgrade Your VIP</h3>
+                            <p>Higher VIP = More daily tasks + bigger rewards</p>
+                            <button onclick="RFTApp.navigate('vipPage')">Learn More →</button>
+                        </div>
+                        <i class="ph-bold ph-crown hbc-icon"></i>
+                    </div>
+                    <div class="hbc-slide hbc-slide-referral">
+                        <div class="hbc-content">
+                            <div class="hbc-tag">REFERRAL BONUS</div>
+                            <h3>Invite & Earn</h3>
+                            <p>Earn up to 25% commission from your team</p>
+                            <button onclick="RFTApp.navigate('referralPage')">Invite Now →</button>
+                        </div>
+                        <i class="ph-bold ph-users-three hbc-icon"></i>
+                    </div>
+                    <div class="hbc-slide hbc-slide-spin">
+                        <div class="hbc-content">
+                            <div class="hbc-tag">LUCKY DRAW</div>
+                            <h3>Daily Spin Wheel</h3>
+                            <p>Spin every day to win cash prizes</p>
+                            <button onclick="RFTApp.navigate('luckyPage')">Spin Now →</button>
+                        </div>
+                        <i class="ph-bold ph-shooting-star hbc-icon"></i>
+                    </div>
+                    <div class="hbc-slide hbc-slide-tasks">
+                        <div class="hbc-content">
+                            <div class="hbc-tag">DAILY TASKS</div>
+                            <h3>Complete Tasks</h3>
+                            <p>Watch videos and earn PKR every single day</p>
+                            <button onclick="RFTApp.navigate('tasksPage')">Start Earning →</button>
+                        </div>
+                        <i class="ph-bold ph-play-circle hbc-icon"></i>
+                    </div>
+                </div>
+                <div class="hbc-dots" id="hbcDots">
+                    <span class="hbc-dot active"></span>
+                    <span class="hbc-dot"></span>
+                    <span class="hbc-dot"></span>
+                    <span class="hbc-dot"></span>
+                </div>
+            </div>
             <!-- User balance bar -->
             <div class="home-balance-bar" id="homeBalanceBar">
                 <div class="hbb-left">
@@ -317,8 +373,13 @@
             <div class="page-header">
                 <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
                 <h2>Task Hall</h2>
+                <button class="pi-edit-btn" onclick="RFTApp.navigate('myTasksPage')"><i class="ph-bold ph-list-bullets"></i> My Tasks</button>
             </div>
-            <div class="rft-task-shell">
+            <!-- Pull to refresh indicator -->
+            <div class="pull-refresh-indicator" id="pullRefreshIndicator">
+                <i class="ph-bold ph-arrows-clockwise"></i> Pull to refresh
+            </div>
+            <div class="rft-task-shell" id="taskShell">
                 <div class="rft-task-stats">
                     <div class="rft-task-stat-card rft-task-stat-done">
                         <div class="rft-task-stat-value" id="pageTaskDone">0</div>
@@ -352,6 +413,10 @@
                     <div class="wallet-col">
                         <span>Points</span>
                         <strong id="walletPoints">0</strong>
+                    </div>
+                    <div class="wallet-col">
+                        <span>Frozen</span>
+                        <strong id="walletFrozen" style="color:#f97316">Rs. 0</strong>
                     </div>
                 </div>
                 <div class="wallet-stats-row">
@@ -450,6 +515,13 @@
                 <span>Available Balance</span>
                 <strong id="withdrawAvailBal">Rs. 0</strong>
             </div>
+            <div class="saved-methods-shortcut" id="savedMethodsShortcut" style="display:none">
+                <div class="section-title" style="padding:0 0 8px">Saved Accounts</div>
+                <div class="sms-list" id="savedMethodsShortcutList"></div>
+                <button class="sms-manage-btn" onclick="RFTApp.navigate('savedMethodsPage')">
+                    <i class="ph-bold ph-gear"></i> Manage Accounts
+                </button>
+            </div>
             <div class="amount-input-box">
                 <label class="input-label">Amount (USDT)</label>
                 <div class="input-wrapper">
@@ -507,6 +579,20 @@
             </div>
             <div class="referral-link-card" id="referralLinkCard">
                 <div class="rlc-loading">Loading…</div>
+            </div>
+            <!-- Referral QR Code -->
+            <div class="referral-qr-section" id="referralQrSection" style="display:none">
+                <div class="section-title" style="padding:0 0 8px">Your Referral QR Code</div>
+                <div class="rqr-wrap">
+                    <div id="referralQrCanvas" class="rqr-canvas"></div>
+                    <p class="rqr-hint">Share this QR code for others to scan and join</p>
+                    <button class="rqr-download" onclick="downloadReferralQR()"><i class="ph-bold ph-download-simple"></i> Save QR</button>
+                </div>
+            </div>
+            <!-- Team Performance Stats -->
+            <div class="team-performance-card" id="teamPerfCard" style="display:none">
+                <div class="section-title" style="padding:0 0 8px">Team Performance</div>
+                <div class="tpc-grid" id="tpcGrid"></div>
             </div>
             <!-- Team tabs -->
             <div class="tx-tabs" style="margin-top:16px">
@@ -880,6 +966,111 @@
         <!-- ═══════════ TASK PREVIEW MODAL ═══════════ -->
         <div class="rft-modal-overlay" id="rftTaskPreview"></div>
 
+        <!-- ═══════════ LOGIN NOTICE POPUP ═══════════ -->
+        <div class="rft-modal-overlay" id="loginPopupOverlay" style="display:none">
+            <div class="login-popup-card" id="loginPopupCard">
+                <button class="lp-close" onclick="closeLoginPopup()"><i class="ph-bold ph-x"></i></button>
+                <div class="lp-img-wrap" id="lpImgWrap" style="display:none">
+                    <img id="lpImg" src="" alt="" class="lp-img">
+                </div>
+                <div class="lp-body">
+                    <h3 class="lp-title" id="lpTitle">Welcome!</h3>
+                    <p class="lp-content" id="lpContent"></p>
+                </div>
+                <button class="btn-primary lp-btn" id="lpBtn" onclick="closeLoginPopup()">Got it</button>
+            </div>
+        </div>
+
+        <!-- ═══════════ TRANSACTION DETAIL MODAL ═══════════ -->
+        <div class="rft-modal-overlay" id="txDetailModal">
+            <div class="tx-detail-card">
+                <div class="txd-header">
+                    <span class="txd-title" id="txdTitle">Transaction</span>
+                    <button class="txd-close" onclick="closeTxDetail()"><i class="ph-bold ph-x"></i></button>
+                </div>
+                <div class="txd-icon-wrap">
+                    <div class="txd-icon" id="txdIcon"><i class="ph-bold ph-arrow-right"></i></div>
+                </div>
+                <div class="txd-amount" id="txdAmount">—</div>
+                <div class="txd-status" id="txdStatus"></div>
+                <div class="txd-rows" id="txdRows"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════ VIP UPGRADE CELEBRATION ═══════════ -->
+        <div class="vip-upgrade-overlay" id="vipUpgradeOverlay" style="display:none">
+            <div class="vip-upgrade-card" id="vipUpgradeCard">
+                <div class="vuc-fireworks" id="vucFireworks"></div>
+                <div class="vuc-badge" id="vucBadge"><i class="ph-bold ph-crown"></i></div>
+                <h2 class="vuc-title">Level Up!</h2>
+                <p class="vuc-level" id="vucLevel">VIP Gold</p>
+                <p class="vuc-msg">Congratulations! You've unlocked higher rewards and more daily tasks.</p>
+                <button class="btn-primary" onclick="closeVipCelebration()">Awesome! 🎉</button>
+            </div>
+        </div>
+
+        <!-- ═══════════ MY TASKS PAGE ═══════════ -->
+        <div class="page my-tasks-page" id="myTasksPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('tasksPage')"><i class="ph-bold ph-arrow-left"></i></button>
+                <h2>My Tasks</h2>
+            </div>
+            <div class="my-tasks-stats" id="myTasksStats"></div>
+            <div class="section-title">Completed Tasks</div>
+            <div class="my-tasks-list" id="myTasksList">
+                <div class="tx-loading">Loading…</div>
+            </div>
+        </div>
+
+        <!-- ═══════════ SAVED PAYOUT METHODS PAGE ═══════════ -->
+        <div class="page saved-methods-page" id="savedMethodsPage">
+            <div class="page-header">
+                <button class="back-btn" onclick="RFTApp.navigate('withdrawPage')"><i class="ph-bold ph-arrow-left"></i></button>
+                <h2>Saved Accounts</h2>
+                <button class="pi-edit-btn" onclick="openAddSavedMethod()"><i class="ph-bold ph-plus"></i> Add</button>
+            </div>
+            <div class="saved-methods-list" id="savedMethodsList">
+                <div class="tx-loading">Loading…</div>
+            </div>
+            <!-- Add method form -->
+            <div class="add-method-form" id="addMethodForm" style="display:none;padding:0 16px">
+                <div class="section-title" style="padding:12px 0 8px">Add New Account</div>
+                <div class="input-group">
+                    <label class="input-label">Payment Method</label>
+                    <div class="input-wrapper" style="padding:0 14px">
+                        <select class="form-input" id="smMethodName" style="background:transparent;border:none;color:inherit">
+                            <option value="jazzcash">JazzCash</option>
+                            <option value="easypaisa">Easypaisa</option>
+                            <option value="sadapay">SadaPay</option>
+                            <option value="nayapay">NayaPay</option>
+                            <option value="raast">Raast</option>
+                            <option value="bank">Bank Transfer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Account Name</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-user input-icon"></i>
+                        <input type="text" class="form-input" id="smAccName" placeholder="Account holder name">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Account Number / Phone</label>
+                    <div class="input-wrapper">
+                        <i class="ph-bold ph-phone input-icon"></i>
+                        <input type="text" class="form-input" id="smAccNum" placeholder="03001234567">
+                    </div>
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="smIsDefault">
+                    <label class="checkbox-label" for="smIsDefault">Set as default</label>
+                </div>
+                <button class="btn-primary" onclick="saveNewMethod()">Save Account</button>
+                <button class="btn-secondary" style="margin-top:8px" onclick="document.getElementById('addMethodForm').style.display='none'">Cancel</button>
+            </div>
+        </div>
+
         <!-- ═══════════ KYC OVERLAY ═══════════ -->
         <div class="rft-kyc-overlay" id="rftKycOverlay">
             <div class="kyc-sheet">
@@ -992,6 +1183,7 @@
     <script src="js/leaderboard.js"></script>
     <script src="js/earnings.js"></script>
     <script src="js/activity-marquee.js"></script>
+    <script src="js/features.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

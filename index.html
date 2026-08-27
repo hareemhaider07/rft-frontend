@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RFT Entertainment — Earn USDT by Watching Videos</title>
+    <title>RFT Entertainment — Earn Daily Rewards</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
     <link rel="stylesheet" href="styles/core.css">
@@ -226,7 +226,7 @@
                 </div>
                 <div class="hbb-right">
                     <span class="hbb-label">Balance</span>
-                    <span class="hbb-amount" id="hbbBalance">0.00 USDT</span>
+                    <span class="hbb-amount" id="hbbBalance">Rs. 0</span>
                 </div>
             </div>
             <!-- Notification bar -->
@@ -346,8 +346,8 @@
                 </div>
                 <div class="wallet-row">
                     <div class="wallet-col">
-                        <span>USDT</span>
-                        <strong id="walletBalUsdt">0.00</strong>
+                        <span>Balance (PKR)</span>
+                        <strong id="walletBalUsdt">Rs. 0</strong>
                     </div>
                     <div class="wallet-col">
                         <span>Points</span>
@@ -355,9 +355,9 @@
                     </div>
                 </div>
                 <div class="wallet-stats-row">
-                    <div class="wstat"><div class="wstat-label">Total Earned</div><div class="wstat-val" id="walletEarned">0.00</div></div>
-                    <div class="wstat"><div class="wstat-label">Total Deposited</div><div class="wstat-val" id="walletDeposited">0.00</div></div>
-                    <div class="wstat"><div class="wstat-label">Total Withdrawn</div><div class="wstat-val" id="walletWithdrawn">0.00</div></div>
+                    <div class="wstat"><div class="wstat-label">Earned</div><div class="wstat-val" id="walletEarned">Rs. 0</div></div>
+                    <div class="wstat"><div class="wstat-label">Deposited</div><div class="wstat-val" id="walletDeposited">Rs. 0</div></div>
+                    <div class="wstat"><div class="wstat-label">Withdrawn</div><div class="wstat-val" id="walletWithdrawn">Rs. 0</div></div>
                 </div>
                 <div class="wallet-actions">
                     <button class="btn-recharge" onclick="RFTApp.navigate('rechargePage')">Recharge</button>
@@ -388,7 +388,7 @@
                 <label class="input-label">Amount (USDT)</label>
                 <div class="input-wrapper">
                     <i class="ph-bold ph-coins input-icon"></i>
-                    <input type="number" class="form-input" id="rechargeAmount" placeholder="Min 10 USDT" min="10">
+                    <input type="number" class="form-input" id="rechargeAmount" placeholder="Enter USDT amount (min 10)" min="10">
                 </div>
                 <div class="pkr-equiv" id="rechargePkrEquiv"></div>
             </div>
@@ -448,7 +448,7 @@
             </div>
             <div class="wallet-mini-card">
                 <span>Available Balance</span>
-                <strong id="withdrawAvailBal">0.00 USDT</strong>
+                <strong id="withdrawAvailBal">Rs. 0</strong>
             </div>
             <div class="amount-input-box">
                 <label class="input-label">Amount (USDT)</label>
@@ -533,8 +533,8 @@
 
             <!-- Summary stat cards -->
             <div class="earn-stat-grid" id="earningsSummary" style="padding:0 16px 16px">
-                <div class="earn-stat"><div class="esv" id="esTotalUsdt">—</div><div class="esl">Total Earned (USDT)</div></div>
-                <div class="earn-stat"><div class="esv" id="esTotalPkr">—</div><div class="esl">Total Earned (PKR)</div></div>
+                <div class="earn-stat"><div class="esv" id="esTotalUsdt">—</div><div class="esl">Total Earned (PKR)</div></div>
+                <div class="earn-stat"><div class="esv" id="esTotalPkr">—</div><div class="esl">PKR (This Period)</div></div>
                 <div class="earn-stat"><div class="esv" id="esStreak">—</div><div class="esl">Day Streak 🔥</div></div>
                 <div class="earn-stat"><div class="esv" id="esActiveDays">—</div><div class="esl">Active Days</div></div>
             </div>
@@ -622,7 +622,7 @@
                 </div>
             </div>
             <div class="profile-stats-row">
-                <div class="pstat"><div class="pstat-val" id="profBalance">0.00</div><div class="pstat-label">USDT Balance</div></div>
+                <div class="pstat"><div class="pstat-val" id="profBalance">Rs. 0</div><div class="pstat-label">Balance</div></div>
                 <div class="pstat"><div class="pstat-val" id="profPoints">0</div><div class="pstat-label">Points</div></div>
                 <div class="pstat"><div class="pstat-val" id="profReferrals">0</div><div class="pstat-label">Referrals</div></div>
             </div>

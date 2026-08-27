@@ -10,6 +10,8 @@
   let _activeTaskId = null;
   let _taskTimer = null;
 
+  const pkr = (usdt) => 'Rs. ' + Math.round(parseFloat(usdt) * TASK_CONFIG.pkrRate).toLocaleString('en-PK');
+
   // ── API ────────────────────────────────────────────────────────────────────
   async function fetchTasks() {
     try {
@@ -42,8 +44,7 @@
         watch_duration_seconds: watchDuration
       });
       if (r?.success) {
-        window.RFTCore?.showToast(`+${r.data.reward_usdt} USDT earned!`, 'success');
-        // update local user balance
+        window.RFTCore?.showToast(`+${pkr(r.data.reward_usdt)} earned!`, 'success');
         const user = window.RFTCore?.getCurrentUser();
         if (user) {
           window.RFTCore?.setCurrentUser({ ...user, balance_usdt: r.data.new_balance_usdt, points: r.data.points });
@@ -61,7 +62,6 @@
   // ── Task Hall render ───────────────────────────────────────────────────────
   async function renderTaskHall(listElId, doneElId, leftElId) {
     await fetchTasks();
-    // update counters
     const doneEl = document.getElementById(doneElId);
     const leftEl = document.getElementById(leftElId);
     if (doneEl) doneEl.textContent = _stats.completed_today;
@@ -75,22 +75,21 @@
       return;
     }
 
-    const typeIcons = { youtube: 'ph-youtube-logo', tiktok: 'ph-tiktok-logo', instagram: 'ph-instagram-logo', facebook: 'ph-facebook-logo', twitter: 'ph-twitter-logo', other: 'ph-play-circle' };
-    const typeColors = { youtube: '#FF0000', tiktok: '#ff0050', instagram: '#E1306C', facebook: '#1877F2', twitter: '#1DA1F2', other: '#d4a843' };
+    const typeIcons  = { youtube:'ph-youtube-logo', tiktok:'ph-tiktok-logo', instagram:'ph-instagram-logo', facebook:'ph-facebook-logo', twitter:'ph-twitter-logo', other:'ph-play-circle' };
+    const typeColors = { youtube:'#FF0000', tiktok:'#ff0050', instagram:'#E1306C', facebook:'#1877F2', twitter:'#1DA1F2', other:'#d4a843' };
 
     listEl.innerHTML = _tasks.map(task => {
-      const pkr = (parseFloat(task.reward_usdt) * TASK_CONFIG.pkrRate).toFixed(0);
-      const icon = typeIcons[task.task_type] || 'ph-play-circle';
-      const color = typeColors[task.task_type] || '#d4a843';
+      const reward = pkr(task.reward_usdt);
+      const icon   = typeIcons[task.task_type]  || 'ph-play-circle';
+      const color  = typeColors[task.task_type] || '#d4a843';
       return `
         <div class="rft-engine-task-card ${task.is_completed ? 'task-completed' : ''}" data-task-id="${task.id}">
           <div class="rft-engine-card-main">
             <div class="rft-engine-poster-wrap">
               <img src="${task.thumbnail_url || `https://placehold.co/120x80/1a1a1a/${color.slice(1)}?text=${task.task_type}`}" alt="${task.title}" loading="lazy">
-              ${!task.is_completed ? `
-              <button class="rft-engine-play" onclick="openTaskPreview('${task.id}')">
-                <i class="ph-bold ph-play"></i>
-              </button>` : `<div class="rft-engine-done"><i class="ph-bold ph-check-circle"></i></div>`}
+              ${!task.is_completed
+                ? `<button class="rft-engine-play" onclick="openTaskPreview('${task.id}')"><i class="ph-bold ph-play"></i></button>`
+                : `<div class="rft-engine-done"><i class="ph-bold ph-check-circle"></i></div>`}
             </div>
             <div class="rft-engine-card-body">
               <div class="rft-engine-card-top">
@@ -102,7 +101,7 @@
               </div>
               <div class="rft-engine-bottom">
                 <span>Reward:</span>
-                <em>${task.reward_usdt} USDT <small>(Rs.${pkr})</small></em>
+                <em>${reward}</em>
               </div>
             </div>
           </div>
@@ -124,7 +123,7 @@
     const modal = document.getElementById('rftTaskPreview');
     if (!modal) return;
 
-    const pkr = (parseFloat(task.reward_usdt) * TASK_CONFIG.pkrRate).toFixed(0);
+    const reward = pkr(task.reward_usdt);
     modal.innerHTML = `
       <div class="rft-task-preview-content">
         <button class="rft-task-preview-close" onclick="closeTaskPreview()"><i class="ph-bold ph-x"></i></button>
@@ -141,7 +140,7 @@
           <p>${task.description || 'Complete this task to earn rewards.'}</p>
           <div class="rft-task-preview-meta">
             <span><i class="ph-bold ph-clock"></i> ${task.duration_seconds}s</span>
-            <span><i class="ph-bold ph-coins"></i> ${task.reward_usdt} USDT (Rs. ${pkr})</span>
+            <span><i class="ph-bold ph-coins"></i> ${reward}</span>
           </div>
           <div id="taskProgress" style="display:none">
             <div class="task-progress-bar"><div class="task-progress-fill" id="taskProgressFill"></div></div>
@@ -157,18 +156,17 @@
     const session = await startTask(taskId);
     if (!session) return;
 
-    const btn = document.getElementById('taskPlayBtn');
+    const btn      = document.getElementById('taskPlayBtn');
     const progress = document.getElementById('taskProgress');
-    const fill = document.getElementById('taskProgressFill');
-    const text = document.getElementById('taskProgressText');
-    if (btn) btn.style.display = 'none';
+    const fill     = document.getElementById('taskProgressFill');
+    const text     = document.getElementById('taskProgressText');
+    if (btn)      btn.style.display      = 'none';
     if (progress) progress.style.display = 'block';
 
-    const task = _tasks.find(t => t.id === taskId);
+    const task     = _tasks.find(t => t.id === taskId);
     const duration = (task?.duration_seconds || 30) * 1000;
-    const start = Date.now();
+    const start    = Date.now();
 
-    // open video in new tab
     if (task?.video_url && task.video_url !== '#') {
       window.open(task.video_url, '_blank');
     }
@@ -186,16 +184,14 @@
   }
 
   async function finishTask(taskId, sessionId, watchSecs) {
-    const progress = document.getElementById('taskProgress');
     const text = document.getElementById('taskProgressText');
     if (text) text.textContent = 'Submitting…';
 
     const result = await completeTask(taskId, sessionId, watchSecs);
     if (result) {
-      if (text) text.textContent = `✓ Earned ${result.reward_usdt} USDT!`;
+      if (text) text.textContent = `✓ Earned ${pkr(result.reward_usdt)}!`;
       setTimeout(() => {
         closeTaskPreview();
-        // re-render both task halls
         renderTaskHall('homeTaskList', 'homeTaskDone', 'homeTaskLeft');
         renderTaskHall('pageTaskList', 'pageTaskDone', 'pageTaskLeft');
         refreshHomeBalance();
@@ -210,7 +206,7 @@
     _activeTaskId = null;
   }
 
-  // ── Member Rankings — real API data ──────────────────────────────────────
+  // ── Member Rankings ────────────────────────────────────────────────────────
   async function renderMemberRankings() {
     const el = document.getElementById('rftVideoMemberRank');
     if (!el) return;
@@ -219,8 +215,7 @@
       if (!r?.success || !r.data.length) {
         el.innerHTML = `
           <div class="rft-video-member-rank-head"><span>Member Rankings</span><span>Weekly Activity</span></div>
-          <div style="text-align:center;padding:20px;color:#666;font-size:13px">No data yet this week</div>
-        `;
+          <div style="text-align:center;padding:20px;color:#666;font-size:13px">No data yet this week</div>`;
         return;
       }
       const vipColors = ['#888','#CD7F32','#C0C0C0','#FFD700','#E5E4E2','#B9F2FF'];
@@ -234,10 +229,9 @@
               ${m.display_name}
               <small style="display:block;color:#6e6e73;font-size:10px">VIP ${m.vip_level} · Weekly activity</small>
             </div>
-            <div class="reward">${m.week_earned} USDT</div>
+            <div class="reward">${pkr(m.week_earned)}</div>
           </div>
-        `).join('')}
-      `;
+        `).join('')}`;
     } catch (_) {
       el.innerHTML = '';
     }
@@ -248,18 +242,17 @@
     try {
       const r = await window.RFTApi?.get('/wallet/balance');
       if (r?.success) {
-        const d = r.data;
-        const balEl   = document.getElementById('hbbBalance');
-        const nameEl  = document.getElementById('hbbName');
-        const vipEl   = document.getElementById('hbbVip');
-        if (balEl)  balEl.textContent  = `${d.balance_usdt} USDT`;
-        if (vipEl)  vipEl.textContent  = `VIP ${d.vip_level || 0}`;
+        const d     = r.data;
+        const balEl = document.getElementById('hbbBalance');
+        const nameEl= document.getElementById('hbbName');
+        const vipEl = document.getElementById('hbbVip');
+        if (balEl) balEl.textContent = pkr(d.balance_usdt);
+        if (vipEl) vipEl.textContent = `VIP ${d.vip_level || 0}`;
         const user = window.RFTCore?.getCurrentUser();
         if (nameEl && user) nameEl.textContent = user.name || 'Welcome';
-        // update profile stats
         const profBal = document.getElementById('profBalance');
         const profPts = document.getElementById('profPoints');
-        if (profBal) profBal.textContent = d.balance_usdt;
+        if (profBal) profBal.textContent = pkr(d.balance_usdt);
         if (profPts) profPts.textContent = d.points;
       }
     } catch (_) {}
@@ -276,7 +269,6 @@
     document.addEventListener('rft:page:tasksPage', () => {
       renderTaskHall('pageTaskList', 'pageTaskDone', 'pageTaskLeft');
     });
-    // expose for HTML onclick
     window.openTaskPreview  = openTaskPreview;
     window.beginTask        = beginTask;
     window.closeTaskPreview = closeTaskPreview;

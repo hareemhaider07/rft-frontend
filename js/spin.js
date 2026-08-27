@@ -232,7 +232,7 @@
       if (val)   val.textContent   = prize.name;
       if (sub) {
         if (isUsdt) {
-          sub.textContent = `≈ Rs. ${prize.prize_value_pkr} credited to your wallet`;
+          sub.textContent = `Rs. ${prize.prize_value_pkr} credited to your wallet`;
         } else {
           sub.textContent = `${prize.prize_value} points added to your account`;
         }
@@ -288,6 +288,7 @@
         return;
       }
       const typeIcon = { usdt: '💰', points: '⭐', empty: '😔' };
+      const PKR_RATE = 280;
       el.innerHTML = r.data.map(h => `
         <div class="spin-hist-row ${h.prize_type === 'empty' ? 'shr-empty' : 'shr-win'}">
           <div class="shr-icon">${typeIcon[h.prize_type] || '🎡'}</div>
@@ -296,8 +297,8 @@
             <div class="shr-date">${fmtDate(h.created_at)}</div>
           </div>
           <div class="shr-val ${h.prize_type === 'empty' ? '' : 'shr-val-win'}">
-            ${h.prize_type === 'usdt'   ? '+' + h.prize_value + ' USDT' :
-              h.prize_type === 'points' ? '+' + h.prize_value + ' pts'  : '—'}
+            ${h.prize_type === 'usdt'   ? '+Rs. ' + Math.round(parseFloat(h.prize_value) * PKR_RATE).toLocaleString('en-PK') :
+              h.prize_type === 'points' ? '+' + h.prize_value + ' pts' : '—'}
           </div>
         </div>
       `).join('');

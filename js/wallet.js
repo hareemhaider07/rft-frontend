@@ -31,11 +31,11 @@
       if (r?.success) {
         const d = r.data;
         document.getElementById('walletBalPkr').textContent     = formatPkr(d.balance_pkr);
-        document.getElementById('walletBalUsdt').textContent    = d.balance_usdt;
+        document.getElementById('walletBalUsdt').textContent    = formatPkr(d.balance_pkr);
         document.getElementById('walletPoints').textContent     = d.points;
-        document.getElementById('walletEarned').textContent     = d.total_earned_usdt + ' USDT';
-        document.getElementById('walletDeposited').textContent  = d.total_recharged_usdt + ' USDT';
-        document.getElementById('walletWithdrawn').textContent  = d.total_withdrawn_usdt + ' USDT';
+        document.getElementById('walletEarned').textContent     = formatPkr(usdtToPkr(d.total_earned_usdt));
+        document.getElementById('walletDeposited').textContent  = formatPkr(usdtToPkr(d.total_recharged_usdt));
+        document.getElementById('walletWithdrawn').textContent  = formatPkr(usdtToPkr(d.total_withdrawn_usdt));
       }
     } catch (_) {}
     loadTransactions('');
@@ -64,7 +64,7 @@
     const icons = { recharge:'ph-arrow-down-left', withdrawal:'ph-arrow-up-right', task_reward:'ph-play-circle', referral_commission:'ph-users-three', referral_bonus:'ph-gift', manual_adjustment:'ph-pencil' };
     const labels = { recharge:'Deposit', withdrawal:'Withdrawal', task_reward:'Task Reward', referral_commission:'Referral Commission', referral_bonus:'Referral Bonus', manual_adjustment:'Balance Adjustment' };
     const statusColors = { completed:'#22c55e', pending:'#f97316', failed:'#ef4444' };
-    const pkr = tx.amount_pkr ? Number(tx.amount_pkr).toLocaleString() : usdtToPkr(tx.amount_usdt);
+    const pkrAmt = tx.amount_pkr ? Number(tx.amount_pkr).toLocaleString('en-PK') : Math.round(parseFloat(tx.amount_usdt) * PKR_RATE).toLocaleString('en-PK');
     return `
       <div class="transaction-item">
         <div class="transaction-icon ${isCredit?'tx-credit':'tx-debit'}">
@@ -77,9 +77,8 @@
         </div>
         <div class="transaction-right">
           <div class="transaction-amount ${isCredit?'positive':'negative'}">
-            ${isCredit?'+':'-'}${tx.amount_usdt} USDT
+            ${isCredit?'+':'-'}Rs. ${pkrAmt}
           </div>
-          <div class="transaction-pkr">Rs. ${pkr}</div>
           <div class="transaction-status" style="color:${statusColors[tx.status]||'#888'}">${tx.status}</div>
         </div>
       </div>`;
@@ -242,7 +241,7 @@
       const r = await window.RFTApi?.get('/wallet/balance');
       if (r?.success) {
         const el = document.getElementById('withdrawAvailBal');
-        if (el) el.textContent = `${r.data.balance_usdt} USDT`;
+        if (el) el.textContent = `${formatPkr(usdtToPkr(r.data.balance_usdt))} (${r.data.balance_usdt} USDT)`;
       }
     } catch (_) {}
     // PKR equiv
@@ -524,7 +523,7 @@
         set('profileName', u.name);
         set('profileEmail', u.email);
         set('profileVipBadge', `VIP ${u.vip_level || 0}`);
-        set('profBalance', u.balance_usdt + ' USDT');
+        set('profBalance', formatPkr(usdtToPkr(u.balance_usdt)));
         set('infoName', u.name);
         set('infoEmail', u.email);
         set('infoPhone', u.phone);

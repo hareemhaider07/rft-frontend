@@ -360,8 +360,8 @@
         <div class="stat-card"><div class="stat-label">Pending Deposits</div><div class="stat-value orange" id="st-dep">—</div></div>
         <div class="stat-card"><div class="stat-label">Pending Withdrawals</div><div class="stat-value red" id="st-wit">—</div></div>
         <div class="stat-card"><div class="stat-label">Pending KYC</div><div class="stat-value gold" id="st-kyc">—</div></div>
-        <div class="stat-card"><div class="stat-label">Total Deposited (USDT)</div><div class="stat-value green" id="st-tdep">—</div><div class="stat-sub" id="st-tdep-pkr"></div></div>
-        <div class="stat-card"><div class="stat-label">Total Withdrawn (USDT)</div><div class="stat-value red" id="st-twit">—</div><div class="stat-sub" id="st-twit-pkr"></div></div>
+        <div class="stat-card"><div class="stat-label">Total Deposited (PKR)</div><div class="stat-value green" id="st-tdep">—</div><div class="stat-sub" id="st-tdep-pkr"></div></div>
+        <div class="stat-card"><div class="stat-label">Total Withdrawn (PKR)</div><div class="stat-value red" id="st-twit">—</div><div class="stat-sub" id="st-twit-pkr"></div></div>
         <div class="stat-card"><div class="stat-label">Active Users (7d)</div><div class="stat-value blue" id="st-active">—</div></div>
         <div class="stat-card"><div class="stat-label">Today's Task Rewards</div><div class="stat-value gold" id="st-tasks">—</div></div>
       </div>
@@ -386,7 +386,7 @@
             </select>
           </div>
         </div>
-        <table><thead><tr><th>User</th><th>Amount USDT</th><th>Amount PKR</th><th>Method</th><th>Screenshot</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <table><thead><tr><th>User</th><th>Amount (PKR)</th><th>Amount PKR</th><th>Method</th><th>Screenshot</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
         <tbody id="depositsBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
         <div class="pagination" id="depositsPag"></div>
       </div>
@@ -436,7 +436,7 @@
             </select>
           </div>
         </div>
-        <table><thead><tr><th>User</th><th>Type</th><th>Amount USDT</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+        <table><thead><tr><th>User</th><th>Type</th><th>Amount (PKR)</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
         <tbody id="allTxBody"><tr><td colspan="6" class="loading">Loading…</td></tr></tbody></table>
         <div class="pagination" id="allTxPag"></div>
       </div>
@@ -494,7 +494,7 @@
             <button class="btn btn-primary" onclick="openAddTask()"><i class="ph-bold ph-plus"></i> Add Task</button>
           </div>
         </div>
-        <table><thead><tr><th>Title</th><th>Type</th><th>Reward USDT</th><th>Duration</th><th>Min VIP</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+        <table><thead><tr><th>Title</th><th>Type</th><th>Reward (PKR)</th><th>Duration</th><th>Min VIP</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="tasksBody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody></table>
       </div>
     </div>
@@ -516,7 +516,7 @@
       <div class="page-title"><i class="ph-bold ph-shooting-star"></i> Lucky Draw Prizes</div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
         <div class="stat-card"><div class="stat-label">Total Spins Today</div><div class="stat-value gold" id="ss-today">—</div></div>
-        <div class="stat-card"><div class="stat-label">USDT Paid Out Today</div><div class="stat-value green" id="ss-usdt">—</div></div>
+        <div class="stat-card"><div class="stat-label">PKR Paid Out Today</div><div class="stat-value green" id="ss-usdt">—</div></div>
         <div class="stat-card"><div class="stat-label">Points Paid Today</div><div class="stat-value blue" id="ss-pts">—</div></div>
       </div>
       <div class="tx-tabs" style="padding:0 0 16px">
@@ -590,7 +590,7 @@
     <div class="modal-field"><label>Action</label>
       <select id="balAction"><option value="add">Add Balance</option><option value="deduct">Deduct Balance</option></select>
     </div>
-    <div class="modal-field"><label>Amount (USDT)</label><input type="number" id="balAmount" placeholder="0.00" step="0.01"></div>
+    <div class="modal-field"><label>Amount (USDT — system currency)</label><input type="number" id="balAmount" placeholder="e.g. 10" step="0.01"></div>
     <div class="modal-field"><label>Note</label><input type="text" id="balNote" placeholder="Reason…"></div>
     <div class="modal-actions">
       <button class="btn btn-danger" onclick="closeModal('balanceModal')">Cancel</button>
@@ -800,6 +800,12 @@ async function apiFetch(endpoint, method = 'GET', body = null, auth = true) {
   const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(API + endpoint, opts);
+  // Auto-logout on 401 (expired token)
+  if (r.status === 401 && auth) {
+    toast('Session expired. Please login again.', 'error');
+    adminLogout();
+    throw new Error('Session expired');
+  }
   return r.json();
 }
 
@@ -850,12 +856,12 @@ async function loadDashboard() {
   document.getElementById('st-dep').textContent    = s.pending_deposits;
   document.getElementById('st-wit').textContent    = s.pending_withdrawals;
   document.getElementById('st-kyc').textContent    = s.pending_kyc;
-  document.getElementById('st-tdep').textContent   = s.total_deposited_usdt + ' USDT';
-  document.getElementById('st-tdep-pkr').textContent = 'PKR ' + Number(s.total_deposited_pkr).toLocaleString();
-  document.getElementById('st-twit').textContent   = s.total_withdrawn_usdt + ' USDT';
-  document.getElementById('st-twit-pkr').textContent = 'PKR ' + Number(s.total_withdrawn_pkr).toLocaleString();
+  document.getElementById('st-tdep').textContent   = 'Rs. ' + Number(Math.round(s.total_deposited_usdt * 280)).toLocaleString();
+  document.getElementById('st-tdep-pkr').textContent = s.total_deposited_usdt + ' USDT';
+  document.getElementById('st-twit').textContent   = 'Rs. ' + Number(Math.round(s.total_withdrawn_usdt * 280)).toLocaleString();
+  document.getElementById('st-twit-pkr').textContent = s.total_withdrawn_usdt + ' USDT';
   document.getElementById('st-active').textContent = s.active_users_7d;
-  document.getElementById('st-tasks').textContent  = s.today_task_rewards + ' USDT';
+  document.getElementById('st-tasks').textContent  = 'Rs. ' + Number(Math.round(s.today_task_rewards * 280)).toLocaleString();
   // badges
   document.getElementById('depositBadge').textContent  = s.pending_deposits;
   document.getElementById('withdrawBadge').textContent = s.pending_withdrawals;
@@ -864,7 +870,7 @@ async function loadDashboard() {
   const body = document.getElementById('recentTxBody');
   body.innerHTML = d.data.recent_transactions.map(t => `
     <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
-    <td>${t.type}</td><td>${t.amount_usdt} USDT</td>
+    <td>${t.type}</td><td>Rs. ${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : Math.round(t.amount_usdt*280).toLocaleString()}</td>
     <td>${fmtBadge(t.status)}</td><td>${fmtDate(t.created_at)}</td></tr>
   `).join('') || '<tr><td colspan="5" class="empty">No transactions</td></tr>';
 }
@@ -878,20 +884,20 @@ async function loadDeposits(page = 1) {
   const body = document.getElementById('depositsBody');
   body.innerHTML = d.data.transactions.map(t => `
     <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
-    <td><strong>${t.amount_usdt}</strong></td>
+    <td><strong>Rs. ${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : Math.round(t.amount_usdt*280).toLocaleString()}</strong></td>
     <td>${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : '—'}</td>
     <td>${t.payment_method||'—'}</td>
     <td>${t.screenshot_url
-      ? `<a href="https://rft-backend-production.up.railway.app${t.screenshot_url}" target="_blank" class="btn btn-view btn-sm">View</a>`
+      ? `<a href="${API.replace('/api','')}${t.screenshot_url}" target="_blank" class="btn btn-view btn-sm">View</a>`
       : '<span style="color:var(--muted)">None</span>'}</td>
     <td>${fmtBadge(t.status)}</td>
     <td>${fmtDate(t.created_at)}</td>
     <td>${t.status === 'pending' ? `
-      <button class="btn btn-approve btn-sm" onclick="openAction('approve','${t.id}','Approve deposit of ${t.amount_usdt} USDT from ${t.name}?')">Approve</button>
-      <button class="btn btn-reject  btn-sm" onclick="openAction('reject', '${t.id}','Reject deposit of ${t.amount_usdt} USDT?')">Reject</button>
+      <button class="btn btn-approve btn-sm" onclick="openAction('approve','${t.id}','Approve deposit of Rs.${Math.round(t.amount_usdt*280).toLocaleString()} from ${t.name}?')">Approve</button>
+      <button class="btn btn-reject  btn-sm" onclick="openAction('reject', '${t.id}','Reject deposit of Rs.${Math.round(t.amount_usdt*280).toLocaleString()}?')">Reject</button>
     ` : (t.admin_note ? `<small style="color:var(--muted)">${t.admin_note}</small>` : '—')}</td></tr>
   `).join('') || '<tr><td colspan="8" class="empty">No deposits</td></tr>';
-  renderPag('depositsPag', d.data.pagination, loadDeposits);
+  renderPag('depositsPag', d.data.pagination, 'loadDeposits');
 }
 
 // ── Withdrawals ───────────────────────────────────────────────────────────────
@@ -903,18 +909,18 @@ async function loadWithdrawals(page = 1) {
   const body = document.getElementById('withdrawalsBody');
   body.innerHTML = d.data.transactions.map(t => `
     <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.phone||''}</small></td>
-    <td><strong>${t.amount_usdt}</strong></td>
+    <td><strong>Rs. ${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : Math.round(t.amount_usdt*280).toLocaleString()}</strong></td>
     <td>${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : '—'}</td>
     <td>${t.payment_method||'—'}</td>
     <td><small style="color:var(--muted)">${(t.notes||'').slice(0,40)}</small></td>
     <td>${fmtBadge(t.status)}</td>
     <td>${fmtDate(t.created_at)}</td>
     <td>${t.status === 'pending' ? `
-      <button class="btn btn-approve btn-sm" onclick="openAction('process','${t.id}','Process withdrawal of ${t.amount_usdt} USDT to ${t.name}?')">Process</button>
-      <button class="btn btn-reject  btn-sm" onclick="openAction('refund', '${t.id}','Refund/reject withdrawal of ${t.amount_usdt} USDT?')">Refund</button>
+      <button class="btn btn-approve btn-sm" onclick="openAction('process','${t.id}','Process withdrawal of Rs.${Math.round(t.amount_usdt*280).toLocaleString()} to ${t.name}?')">Process</button>
+      <button class="btn btn-reject  btn-sm" onclick="openAction('refund', '${t.id}','Refund/reject withdrawal of Rs.${Math.round(t.amount_usdt*280).toLocaleString()}?')">Refund</button>
     ` : (t.admin_note ? `<small style="color:var(--muted)">${t.admin_note}</small>` : '—')}</td></tr>
   `).join('') || '<tr><td colspan="8" class="empty">No withdrawals</td></tr>';
-  renderPag('withdrawalsPag', d.data.pagination, loadWithdrawals);
+  renderPag('withdrawalsPag', d.data.pagination, 'loadWithdrawals');
 }
 
 // ── All Transactions ──────────────────────────────────────────────────────────
@@ -928,12 +934,12 @@ async function loadAllTx(page = 1) {
   body.innerHTML = d.data.transactions.map(t => `
     <tr><td>${t.name||'—'}<br><small style="color:var(--muted)">${t.email||''}</small></td>
     <td><span class="badge badge-pending">${t.type}</span></td>
-    <td>${t.amount_usdt} USDT</td>
+    <td>Rs. ${t.amount_pkr ? Number(t.amount_pkr).toLocaleString() : Math.round(t.amount_usdt*280).toLocaleString()}</td>
     <td>${t.payment_method||'—'}</td>
     <td>${fmtBadge(t.status)}</td>
     <td>${fmtDate(t.created_at)}</td></tr>
   `).join('') || '<tr><td colspan="6" class="empty">No transactions</td></tr>';
-  renderPag('allTxPag', d.data.pagination, loadAllTx);
+  renderPag('allTxPag', d.data.pagination, 'loadAllTx');
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
@@ -948,7 +954,7 @@ async function loadUsers(page = 1) {
     <tr><td>${u.name||'—'}<br><small style="color:var(--muted)">${u.email||''}</small></td>
     <td>${u.phone||'—'}</td>
     <td>${fmtVip(u.vip_level)}</td>
-    <td>${u.balance_usdt} USDT</td>
+    <td>Rs. ${u.balance_usdt ? Math.round(u.balance_usdt*280).toLocaleString() : '0'}</td>
     <td>${fmtBadge(u.kyc_status)}</td>
     <td>${u.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
     <td>${fmtDate(u.created_at)}</td>
@@ -957,7 +963,7 @@ async function loadUsers(page = 1) {
       <button class="btn btn-edit btn-sm" onclick="openBalance('${u.id}','${u.name||'User'}')">Balance</button>
     </td></tr>
   `).join('') || '<tr><td colspan="8" class="empty">No users</td></tr>';
-  renderPag('usersPag', d.data.pagination, loadUsers);
+  renderPag('usersPag', d.data.pagination, 'loadUsers');
 }
 
 function debSearch(val) {
@@ -975,11 +981,11 @@ async function viewUser(id) {
       <div class="modal-info-row"><span>Email</span><span>${u.email||'—'}</span></div>
       <div class="modal-info-row"><span>Phone</span><span>${u.phone||'—'}</span></div>
       <div class="modal-info-row"><span>VIP Level</span><span>${fmtVip(u.vip_level)}</span></div>
-      <div class="modal-info-row"><span>Balance</span><span>${u.balance_usdt} USDT</span></div>
+      <div class="modal-info-row"><span>Balance</span><span>Rs. ${u.balance_usdt ? Math.round(u.balance_usdt*280).toLocaleString() : '0'}</span></div>
       <div class="modal-info-row"><span>KYC Status</span><span>${fmtBadge(u.kyc_status)}</span></div>
       <div class="modal-info-row"><span>Referral Code</span><span>${u.referral_code||'—'}</span></div>
-      <div class="modal-info-row"><span>Total Deposited</span><span>${u.total_deposited} USDT</span></div>
-      <div class="modal-info-row"><span>Total Withdrawn</span><span>${u.total_withdrawn} USDT</span></div>
+      <div class="modal-info-row"><span>Total Deposited</span><span>Rs. ${u.total_deposited ? Math.round(u.total_deposited*280).toLocaleString() : '0'}</span></div>
+      <div class="modal-info-row"><span>Total Withdrawn</span><span>Rs. ${u.total_withdrawn ? Math.round(u.total_withdrawn*280).toLocaleString() : '0'}</span></div>
       <div class="modal-info-row"><span>Total Referrals</span><span>${u.total_referrals}</span></div>
       <div class="modal-info-row"><span>Joined</span><span>${fmtDate(u.created_at)}</span></div>
     </div>
@@ -1027,7 +1033,7 @@ async function loadKyc(page = 1) {
   const d = await apiFetch(`/admin/kyc?status=${status}&page=${page}&limit=15`);
   if (!d.success) return;
   const body = document.getElementById('kycBody');
-  const BE = 'https://rft-backend-production.up.railway.app';
+  const BE = API.replace('/api', '');
   body.innerHTML = d.data.documents.map(k => `
     <tr><td>${k.name||'—'}<br><small style="color:var(--muted)">${k.phone||''}</small></td>
     <td>${k.document_type}</td><td>${k.issuing_country}</td><td>${k.document_number}</td>
@@ -1043,7 +1049,7 @@ async function loadKyc(page = 1) {
       <button class="btn btn-reject  btn-sm" onclick="openAction('kyc-reject', '${k.id}','Reject KYC for ${k.name}?')">Reject</button>
     ` : '—'}</td></tr>
   `).join('') || '<tr><td colspan="8" class="empty">No documents</td></tr>';
-  renderPag('kycPag', d.data.pagination, loadKyc);
+  renderPag('kycPag', d.data.pagination, 'loadKyc');
 }
 
 // ── Action modal ──────────────────────────────────────────────────────────────
@@ -1083,7 +1089,7 @@ async function loadTasks() {
   const body = document.getElementById('tasksBody');
   body.innerHTML = d.data.map(t => `
     <tr><td>${t.title}</td><td>${t.task_type}</td>
-    <td>${t.reward_usdt} USDT</td><td>${t.duration_seconds}s</td>
+    <td>Rs. ${Math.round(parseFloat(t.reward_usdt||0)*280).toLocaleString()}</td><td>${t.duration_seconds}s</td>
     <td>${fmtVip(t.min_vip_level)}</td><td>${t.order_index}</td>
     <td>${t.is_active ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-inactive">Inactive</span>'}</td>
     <td>
@@ -1162,14 +1168,14 @@ async function loadVip() {
         <div><div class="vip-name">${v.name}</div></div>
         <button class="btn btn-edit btn-sm" style="margin-left:auto" onclick="openEditVip(${JSON.stringify(v).replace(/"/g,'&quot;')})">Edit</button>
       </div>
-      <div class="vip-field"><span>Required Deposit</span><span>${v.required_deposit_usdt} USDT</span></div>
+      <div class="vip-field"><span>Required Deposit</span><span>Rs. ${Math.round(v.required_deposit_usdt*280).toLocaleString()}</span></div>
       <div class="vip-field"><span>Daily Tasks</span><span>${v.daily_task_limit || 'Unlimited'}</span></div>
-      <div class="vip-field"><span>Task Reward</span><span>${v.task_reward_usdt} USDT</span></div>
-      <div class="vip-field"><span>Referral Bonus</span><span>${v.referral_bonus_usdt} USDT</span></div>
+      <div class="vip-field"><span>Task Reward</span><span>Rs. ${Math.round(v.task_reward_usdt*280).toLocaleString()}</span></div>
+      <div class="vip-field"><span>Referral Bonus</span><span>Rs. ${Math.round(v.referral_bonus_usdt*280).toLocaleString()}</span></div>
       <div class="vip-field"><span>L1 Commission</span><span>${(v.level1_commission_rate*100).toFixed(0)}%</span></div>
       <div class="vip-field"><span>L2 Commission</span><span>${(v.level2_commission_rate*100).toFixed(0)}%</span></div>
       <div class="vip-field"><span>L3 Commission</span><span>${(v.level3_commission_rate*100).toFixed(0)}%</span></div>
-      <div class="vip-field"><span>Min Withdraw</span><span>${v.min_withdraw_usdt} USDT</span></div>
+      <div class="vip-field"><span>Min Withdraw</span><span>Rs. ${Math.round(v.min_withdraw_usdt*280).toLocaleString()}</span></div>
     </div>
   `).join('');
 }
@@ -1209,7 +1215,7 @@ async function submitVip() {
 async function loadPm() {
   const d = await apiFetch('/admin/payment-methods');
   if (!d.success) return;
-  const BE = 'https://rft-backend-production.up.railway.app';
+  const BE = API.replace('/api', '');
   document.getElementById('pmGrid').innerHTML = d.data.map(p => `
     <div class="vip-card">
       <div class="vip-card-head">
@@ -1312,7 +1318,7 @@ async function loadSpinPrizes(vipLevel, tabEl) {
       const el2 = document.getElementById('ss-usdt');
       const el3 = document.getElementById('ss-pts');
       if (el1) el1.textContent = s.data.total_spins_today;
-      if (el2) el2.textContent = s.data.usdt_paid_today + ' USDT';
+      if (el2) el2.textContent = 'Rs. ' + Math.round(parseFloat(s.data.usdt_paid_today||0)*280).toLocaleString();
       if (el3) el3.textContent = s.data.points_paid_today;
     }
   } catch(_) {}
@@ -1408,16 +1414,16 @@ async function toggleSpinPrize(id, active) {
 }
 
 // ── Pagination helper ─────────────────────────────────────────────────────────
-function renderPag(containerId, pag, loadFn) {
+function renderPag(containerId, pag, loadFnName) {
   const el = document.getElementById(containerId);
   if (!el) return;
   if (!pag || pag.total_pages <= 1) { el.innerHTML = ''; return; }
   let html = `<span class="page-info">Page ${pag.page} of ${pag.total_pages} (${pag.total} records)</span>`;
-  if (pag.page > 1) html += `<button class="page-btn" onclick="${loadFn.name}(${pag.page-1})">‹ Prev</button>`;
+  if (pag.page > 1) html += `<button class="page-btn" onclick="${loadFnName}(${pag.page-1})">‹ Prev</button>`;
   for (let i = Math.max(1, pag.page-2); i <= Math.min(pag.total_pages, pag.page+2); i++) {
-    html += `<button class="page-btn ${i===pag.page?'active':''}" onclick="${loadFn.name}(${i})">${i}</button>`;
+    html += `<button class="page-btn ${i===pag.page?'active':''}" onclick="${loadFnName}(${i})">${i}</button>`;
   }
-  if (pag.page < pag.total_pages) html += `<button class="page-btn" onclick="${loadFn.name}(${pag.page+1})">Next ›</button>`;
+  if (pag.page < pag.total_pages) html += `<button class="page-btn" onclick="${loadFnName}(${pag.page+1})">Next ›</button>`;
   el.innerHTML = html;
 }
 </script>

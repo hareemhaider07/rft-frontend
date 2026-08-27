@@ -77,7 +77,7 @@
     // Update home balance bar
     const balEl  = document.getElementById('hbbBalance');
     const vipEl  = document.getElementById('hbbVip');
-    if (balEl) balEl.textContent = balance.usdt + ' USDT';
+    if (balEl) balEl.textContent = 'Rs. ' + Math.round(parseFloat(balance.usdt || 0) * 280).toLocaleString('en-PK');
     if (vipEl) vipEl.textContent = 'VIP ' + balance.vip_level;
 
     // Update wallet page if open
@@ -90,12 +90,12 @@
 
     // Update withdraw available balance
     const wdBal = document.getElementById('withdrawAvailBal');
-    if (wdBal) wdBal.textContent = balance.usdt + ' USDT';
+    if (wdBal) wdBal.textContent = 'Rs. ' + Math.round(parseFloat(balance.usdt || 0) * 280).toLocaleString('en-PK') + ' (' + balance.usdt + ' USDT)';
 
     // Update profile stats
     const profBal = document.getElementById('profBalance');
     const profPts = document.getElementById('profPoints');
-    if (profBal) profBal.textContent = balance.usdt + ' USDT';
+    if (profBal) profBal.textContent = 'Rs. ' + Math.round(parseFloat(balance.usdt || 0) * 280).toLocaleString('en-PK');
     if (profPts) profPts.textContent = balance.points;
 
     // Update stored user object
@@ -198,7 +198,7 @@
     if (count > 0) {
       document.title = `(${count}) RFT Entertainment`;
     } else {
-      document.title = 'RFT Entertainment — Earn USDT by Watching Videos';
+      document.title = 'RFT Entertainment — Earn PKR by Watching Videos';
     }
   }
 

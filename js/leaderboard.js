@@ -6,11 +6,11 @@
   'use strict';
 
   const TAB_DESCRIPTIONS = {
-    weekly:    'Top USDT earners this week (task rewards)',
-    monthly:   'Top USDT earners this month',
+    weekly:    'Top earners this week (task rewards in PKR)',
+    monthly:   'Top earners this month (PKR)',
     tasks:     'Most tasks completed all time',
     referrals: 'Most members referred',
-    spin:      'Biggest lucky draw winners'
+    spin:      'Biggest lucky draw winners (PKR)'
   };
 
   const VIP_COLORS = ['#888888','#CD7F32','#C0C0C0','#FFD700','#E5E4E2','#B9F2FF'];

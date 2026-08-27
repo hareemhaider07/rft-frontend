@@ -12,6 +12,8 @@
   let _ctx           = null;
   let _bars          = [];   // hit areas for touch/click
 
+  const fmt = (usdt) => 'Rs. ' + Math.round(parseFloat(usdt || 0) * PKR_RATE).toLocaleString('en-PK');
+
   // ── Load page ───────────────────────────────────────────────────────────────
   async function loadEarningsPage() {
     await load(7);
@@ -53,22 +55,20 @@
   // ── Stat cards ──────────────────────────────────────────────────────────────
   function renderStats(s) {
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set('esTotalUsdt',  s.total_usdt + ' USDT');
+    set('esTotalUsdt',  fmt(s.total_usdt));
     set('esTotalPkr',   'Rs. ' + Number(s.total_pkr).toLocaleString());
     set('esStreak',     s.earning_streak + (s.earning_streak === 1 ? ' day' : ' days'));
     set('esActiveDays', s.active_days + ' / ' + _currentPeriod);
 
-    // Best day badge
     const badge = document.getElementById('earnBestDay');
     const text  = document.getElementById('earnBestDayText');
     if (s.best_day_usdt > 0 && badge && text) {
       badge.style.display = 'flex';
-      text.textContent = `${s.best_day_usdt} USDT on ${fmtDate(s.best_day_date)}`;
+      text.textContent = `${fmt(s.best_day_usdt)} on ${fmtDate(s.best_day_date)}`;
     } else if (badge) {
       badge.style.display = 'none';
     }
 
-    // Chart title
     const title = document.getElementById('eccTitle');
     if (title) title.textContent = `Daily Earnings — Last ${_currentPeriod} Days`;
   }
@@ -80,9 +80,9 @@
       : '0%';
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-    set('ebdTasksVal',  s.total_tasks_usdt    + ' USDT');
-    set('ebdRefVal',    s.total_referral_usdt + ' USDT');
-    set('ebdSpinVal',   s.total_spin_usdt     + ' USDT');
+    set('ebdTasksVal',  fmt(s.total_tasks_usdt));
+    set('ebdRefVal',    fmt(s.total_referral_usdt));
+    set('ebdSpinVal',   fmt(s.total_spin_usdt));
     set('ebdTasksSub',  pct(s.total_tasks_usdt)    + ' of total · ' + period + ' days');
     set('ebdRefSub',    pct(s.total_referral_usdt) + ' of total');
     set('ebdSpinSub',   pct(s.total_spin_usdt)     + ' of total');
@@ -135,9 +135,11 @@
     _ctx.font        = '9px Inter, sans-serif';
     _ctx.textAlign   = 'right';
 
+    // Y-axis labels in PKR
     for (let i = 0; i <= gridLines; i++) {
       const y      = PAD_T + chartH - (i / gridLines) * chartH;
-      const label  = ((i / gridLines) * safeMax).toFixed(i === 0 ? 0 : 3);
+      const pkrVal = Math.round((i / gridLines) * safeMax * PKR_RATE);
+      const label  = pkrVal >= 1000 ? (pkrVal/1000).toFixed(0)+'k' : pkrVal.toString();
       _ctx.beginPath();
       _ctx.moveTo(PAD_L, y);
       _ctx.lineTo(PAD_L + chartW, y);
@@ -218,15 +220,17 @@
     const hit = _bars.find(b => cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h);
     if (!hit) { tooltip.style.display = 'none'; return; }
 
-    const d = hit.data;
-    const pkr = (d.total * PKR_RATE).toFixed(0);
+    const d   = hit.data;
+    const tot = Math.round(d.total    * PKR_RATE);
+    const tsk = Math.round(d.tasks    * PKR_RATE);
+    const ref = Math.round(d.referral * PKR_RATE);
+    const spn = Math.round(d.spin     * PKR_RATE);
     tooltip.innerHTML = `
       <div class="ect-date">${fmtDate(d.date)}</div>
-      <div class="ect-row"><span style="color:#d4a843">●</span> Tasks: ${d.tasks} USDT</div>
-      ${d.referral > 0 ? `<div class="ect-row"><span style="color:#3b82f6">●</span> Referral: ${d.referral} USDT</div>` : ''}
-      ${d.spin > 0     ? `<div class="ect-row"><span style="color:#a855f7">●</span> Spin: ${d.spin} USDT</div>` : ''}
-      <div class="ect-total">Total: ${d.total} USDT</div>
-      <div class="ect-pkr">≈ Rs. ${Number(pkr).toLocaleString()}</div>
+      <div class="ect-row"><span style="color:#d4a843">●</span> Tasks: Rs. ${tsk.toLocaleString('en-PK')}</div>
+      ${ref > 0 ? `<div class="ect-row"><span style="color:#3b82f6">●</span> Referral: Rs. ${ref.toLocaleString('en-PK')}</div>` : ''}
+      ${spn > 0 ? `<div class="ect-row"><span style="color:#a855f7">●</span> Spin: Rs. ${spn.toLocaleString('en-PK')}</div>` : ''}
+      <div class="ect-total">Total: Rs. ${tot.toLocaleString('en-PK')}</div>
     `;
 
     // Position tooltip
@@ -285,8 +289,7 @@
               <div class="transaction-date">${fmtTime(tx.created_at)}</div>
             </div>
             <div class="transaction-right">
-              <div class="transaction-amount positive">+${tx.amount_usdt} USDT</div>
-              <div class="transaction-pkr">Rs. ${pkr}</div>
+              <div class="transaction-amount positive">+Rs. ${pkr}</div>
             </div>
           </div>`;
       }).join('');

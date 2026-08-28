@@ -26,11 +26,11 @@
   box-shadow: 0 4px 16px rgba(184,134,11,.25);
 }
 .hbb-left   { display: flex; flex-direction: column; gap: 3px; }
-.hbb-name   { font-size: 15px; font-weight: 700; color: #fff; }
+.hbb-name   { font-size: 15px; font-weight: 700; color: #1a1a1a; }
 .hbb-vip    { font-size: 11px; color: rgba(255,255,255,.75); font-weight: 600; }
 .hbb-right  { text-align: right; }
 .hbb-label  { font-size: 10px; color: rgba(255,255,255,.7); text-transform: uppercase; letter-spacing: .5px; }
-.hbb-amount { font-size: 20px; font-weight: 800; color: #fff; margin-top: 2px; }
+.hbb-amount { font-size: 20px; font-weight: 800; color: #1a1a1a; margin-top: 2px; }
 
 /* ── Announcement bar ──────────────────────────────────────── */
 .welcome-bar {
@@ -82,7 +82,7 @@
   border-color: var(--gold-border);
 }
 .feat-badge {
-  background: var(--error); color: #fff;
+  background: var(--error); color: #1a1a1a;
   border-radius: 8px; padding: 1px 5px; font-size: 8px; font-weight: 700;
   vertical-align: top; margin-left: 1px;
 }
@@ -151,14 +151,14 @@
   margin-bottom: 16px;
 }
 .wallet-header span  { font-size: 11px; color: rgba(255,255,255,.75); text-transform: uppercase; letter-spacing: .5px; }
-.wallet-header strong{ font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -.3px; }
+.wallet-header strong{ font-size: 26px; font-weight: 800; color: #1a1a1a; letter-spacing: -.3px; }
 .wallet-row {
   display: flex; border-top: 1px solid rgba(255,255,255,.2);
   padding-top: 12px; margin-bottom: 14px;
 }
 .wallet-col { flex: 1; text-align: center; }
 .wallet-col span   { display: block; font-size: 10px; color: rgba(255,255,255,.7); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .3px; }
-.wallet-col strong { font-size: 16px; font-weight: 700; color: #fff; }
+.wallet-col strong { font-size: 16px; font-weight: 700; color: #1a1a1a; }
 .wallet-stats-row {
   display: flex; border-top: 1px solid rgba(255,255,255,.2);
   padding-top: 10px; margin-bottom: 14px;
@@ -166,15 +166,15 @@
 .wstat       { flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,.2); }
 .wstat:last-child { border-right: none; }
 .wstat-label { font-size: 9px; color: rgba(255,255,255,.65); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .3px; }
-.wstat-val   { font-size: 11px; font-weight: 700; color: #fff; }
+.wstat-val   { font-size: 11px; font-weight: 700; color: #1a1a1a; }
 .wallet-actions { display: flex; gap: 10px; }
 .btn-recharge.wallet-btn {
   flex: 1; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.3);
-  color: #fff; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 600;
+  color: #1a1a1a; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 600;
 }
 .btn-withdraw.wallet-btn {
   flex: 1; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
-  color: #fff; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 600;
+  color: #1a1a1a; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 600;
 }
 
 /* ── Transaction list ──────────────────────────────────────── */
@@ -188,7 +188,7 @@
   border: 1.5px solid var(--border); background: var(--white);
   color: var(--text-muted); font-size: 12px; cursor: pointer; transition: all .15s;
 }
-.tx-tab.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
+.tx-tab.active { background: var(--gold); color: #1a1a1a; border-color: var(--gold); font-weight: 600; }
 .tx-loading { text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px; }
 .transaction-item {
   display: flex; align-items: center; gap: 12px;

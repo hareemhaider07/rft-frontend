@@ -39,7 +39,7 @@
 
 .feat-badge {
   background: var(--primary);
-  color: white;
+  color: #1a1a1a;
   border-radius: 6px;
   padding: 2px 6px;
   font-size: 10px;
@@ -87,7 +87,7 @@
   justify-content: center;
   background: rgba(0,0,0,0.5);
   border: none;
-  color: white;
+  color: #1a1a1a;
   font-size: 24px;
   cursor: pointer;
 }
@@ -98,7 +98,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(42, 157, 143, 0.6);
-  color: white;
+  color: #1a1a1a;
   font-size: 28px;
 }
 .rft-engine-card-body {
@@ -156,7 +156,7 @@
   right: 14px;
   background: rgba(255,255,255,0.1);
   border: none;
-  color: white;
+  color: #1a1a1a;
   font-size: 18px;
   border-radius: 50%;
   width: 32px;
@@ -1436,7 +1436,7 @@
 }
 .lb-tab.active {
   background: var(--primary);
-  color: white;
+  color: #1a1a1a;
   border-color: var(--primary);
   font-weight: 700;
 }
@@ -2854,7 +2854,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #1a1a1a;
   transition: background 0.18s ease;
 }
 

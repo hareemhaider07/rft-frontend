@@ -430,7 +430,7 @@ body {
 .auth-banner {
   position: relative;
   width: 100%;
-  height: 240px;
+  height: 260px;
   overflow: hidden;
   flex-shrink: 0;
   background: #0a0a0a;
@@ -440,23 +440,23 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Criterion_Collection_DVD_covers.jpg/1200px-Criterion_Collection_DVD_covers.jpg');
+  background-image: url('../assets/banner.jpg');
   background-size: cover;
   background-position: center top;
-  opacity: 0.85;
+  opacity: 0.9;
   z-index: 0;
 }
 
-/* Dark gradient overlay at bottom so logo stands out */
+/* Dark gradient overlay — stronger at bottom so logo pops */
 .auth-banner::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.15) 0%,
+    rgba(0,0,0,0.20) 0%,
     rgba(0,0,0,0.10) 40%,
-    rgba(0,0,0,0.55) 100%
+    rgba(0,0,0,0.65) 100%
   );
   z-index: 1;
 }
@@ -486,10 +486,10 @@ body {
   backdrop-filter: blur(6px);
 }
 
-/* Logo centered over the banner */
+/* Logo centered at the bottom of the banner */
 .auth-banner-logo {
   position: absolute;
-  bottom: 16px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
@@ -499,21 +499,26 @@ body {
 }
 
 .auth-logo-img {
-  width: 160px;
+  width: 170px;
   height: auto;
-  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.7));
+  filter: drop-shadow(0 2px 16px rgba(0,0,0,0.8));
 }
 
-/* Form card overlaps the banner slightly */
+/* Form card overlaps banner by 24px */
 .auth-form-card {
-  margin-top: -20px !important;
+  margin-top: -24px !important;
   border-radius: 20px 20px 16px 16px !important;
   position: relative;
   z-index: 2;
+  margin-bottom: 40px !important;
 }
 
-/* Login page: allow full scroll without extra padding at top */
+/* Login/Register pages: remove any top padding, start flush */
 #loginPage,
 #registerPage {
   padding-top: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

@@ -21,121 +21,101 @@
         <div class="toast" id="toast"></div>
 
         <!-- ═══════════ LOGIN ═══════════ -->
-        <div class="page" id="loginPage">
-            <div class="auth-banner">
-                <img src="assets/banner.jpg" alt="" class="auth-banner-img">
-                <div class="auth-banner-overlay"></div>
-                <div class="auth-banner-topbar">
-                    <button class="back-btn auth-back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
-                    <button class="language-btn auth-lang-btn"><i class="ph-bold ph-globe"></i> EN</button>
-                </div>
-            </div>
-            <div class="auth-logo-row">
-                <div class="auth-logo-pill">
-                    <img src="assets/logo.svg" alt="RFT Entertainment" class="auth-logo-img">
-                </div>
-            </div>
-            <div class="form-card auth-form-card">
-                <h2 class="form-title">Welcome Back</h2>
-                <p class="form-subtitle">Sign in to your RFT account</p>
-                <div class="input-group">
-                    <label class="input-label">Email or Phone</label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-user input-icon"></i>
-                        <input type="text" class="form-input" id="loginEmail" placeholder="Enter email or phone">
+        <div class="page auth-page" id="loginPage">
+            <div class="auth-card">
+                <!-- Banner as card header bg -->
+                <div class="auth-card-header">
+                    <img src="assets/banner.jpg" alt="" class="auth-card-bg">
+                    <div class="auth-card-header-overlay"></div>
+                    <div class="auth-card-topbar">
+                        <button class="auth-nav-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
+                        <button class="auth-nav-btn"><i class="ph-bold ph-globe"></i> EN</button>
+                    </div>
+                    <div class="auth-card-hero">
+                        <img src="assets/logo.svg" alt="RFT Entertainment" class="auth-card-logo">
+                        <h1 class="auth-card-title">Welcome <span>Back</span></h1>
+                        <p class="auth-card-sub">Sign in to your RFT account</p>
                     </div>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-lock input-icon"></i>
-                        <input type="password" class="form-input" id="loginPassword" placeholder="Enter password"
-                               onkeydown="if(event.key==='Enter') handleLogin()">
-                        <button class="toggle-password" onclick="togglePwd('loginPassword', this)"><i class="ph-bold ph-eye"></i></button>
+                <!-- Form fields -->
+                <div class="auth-card-body">
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-user"></i>
+                        <input type="text" id="loginEmail" placeholder="Email or Phone">
                     </div>
-                </div>
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" id="rememberMe">
-                    <label class="checkbox-label" for="rememberMe">Remember me</label>
-                </div>
-                <button class="btn-primary" onclick="handleLogin()">Sign In</button>
-                <div class="form-footer">
-                    <p>Don't have an account? <span class="form-link" onclick="RFTApp.navigate('registerPage')">Sign Up</span></p>
-                    <p><span class="form-link" onclick="RFTApp.navigate('forgotPage')">Forgot Password?</span></p>
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter') handleLogin()">
+                        <button class="auth-eye-btn" onclick="togglePwd('loginPassword',this)"><i class="ph-bold ph-eye"></i></button>
+                    </div>
+                    <div class="auth-check-row">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+                    <button class="auth-submit-btn" onclick="handleLogin()">Sign In</button>
+                    <div class="auth-footer-links">
+                        <span onclick="RFTApp.navigate('forgotPage')">Forgot Password?</span>
+                        <span>Don't have an account? <strong onclick="RFTApp.navigate('registerPage')">Sign Up</strong></span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- ═══════════ REGISTER ═══════════ -->
-        <div class="page" id="registerPage">
-            <div class="auth-banner">
-                <img src="assets/banner.jpg" alt="" class="auth-banner-img">
-                <div class="auth-banner-overlay"></div>
-                <div class="auth-banner-topbar">
-                    <button class="back-btn auth-back-btn" onclick="RFTApp.navigate('loginPage')"><i class="ph-bold ph-arrow-left"></i></button>
-                    <button class="language-btn auth-lang-btn"><i class="ph-bold ph-globe"></i> EN</button>
-                </div>
-            </div>
-            <div class="auth-logo-row">
-                <div class="auth-logo-pill">
-                    <img src="assets/logo.svg" alt="RFT Entertainment" class="auth-logo-img">
-                </div>
-            </div>
-            <div class="form-card auth-form-card">
-                <h2 class="form-title">Create Account</h2>
-                <p class="form-subtitle">Join RFT Entertainment today</p>
-                <div class="input-group">
-                    <label class="input-label">Full Name</label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-user input-icon"></i>
-                        <input type="text" class="form-input" id="registerName" placeholder="Enter your name">
+        <div class="page auth-page" id="registerPage">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <img src="assets/banner.jpg" alt="" class="auth-card-bg">
+                    <div class="auth-card-header-overlay"></div>
+                    <div class="auth-card-topbar">
+                        <button class="auth-nav-btn" onclick="RFTApp.navigate('loginPage')"><i class="ph-bold ph-arrow-left"></i></button>
+                        <button class="auth-nav-btn"><i class="ph-bold ph-globe"></i> EN</button>
+                    </div>
+                    <div class="auth-card-hero">
+                        <img src="assets/logo.svg" alt="RFT Entertainment" class="auth-card-logo">
+                        <h1 class="auth-card-title">Create <span>Account</span></h1>
+                        <p class="auth-card-sub">Join RFT Entertainment today</p>
                     </div>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Email</label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-envelope input-icon"></i>
-                        <input type="email" class="form-input" id="registerEmail" placeholder="Enter email">
+                <div class="auth-card-body">
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-user"></i>
+                        <input type="text" id="registerName" placeholder="Full Name">
                     </div>
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Phone</label>
-                    <div class="input-wrapper" style="padding:0">
-                        <select id="countryCode" class="country-code-select" onchange="updateCountryCode(this)">
-                            <option value="+92" data-flag="🇵🇰">🇵🇰 +92</option>
-                            <option value="+91" data-flag="🇮🇳">🇮🇳 +91</option>
-                            <option value="+880" data-flag="🇧🇩">🇧🇩 +880</option>
-                            <option value="+971" data-flag="🇦🇪">🇦🇪 +971</option>
-                            <option value="+966" data-flag="🇸🇦">🇸🇦 +966</option>
-                            <option value="+974" data-flag="🇶🇦">🇶🇦 +974</option>
-                            <option value="+44"  data-flag="🇬🇧">🇬🇧 +44</option>
-                            <option value="+1"   data-flag="🇺🇸">🇺🇸 +1</option>
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-envelope"></i>
+                        <input type="email" id="registerEmail" placeholder="Email Address">
+                    </div>
+                    <div class="auth-input-group auth-phone-group">
+                        <select id="countryCode" class="auth-country-select" onchange="updateCountryCode(this)">
+                            <option value="+92">🇵🇰 +92</option>
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+880">🇧🇩 +880</option>
+                            <option value="+971">🇦🇪 +971</option>
+                            <option value="+966">🇸🇦 +966</option>
+                            <option value="+974">🇶🇦 +974</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+1">🇺🇸 +1</option>
                         </select>
-                        <input type="tel" class="form-input" id="registerPhone" placeholder="3001234567" style="border-left:1px solid rgba(255,255,255,.08)">
+                        <input type="tel" id="registerPhone" placeholder="Phone Number">
                     </div>
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-lock input-icon"></i>
-                        <input type="password" class="form-input" id="registerPassword" placeholder="Min 6 characters">
-                        <button class="toggle-password" onclick="togglePwd('registerPassword', this)"><i class="ph-bold ph-eye"></i></button>
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-lock"></i>
+                        <input type="password" id="registerPassword" placeholder="Create Password">
+                        <button class="auth-eye-btn" onclick="togglePwd('registerPassword',this)"><i class="ph-bold ph-eye"></i></button>
                     </div>
-                </div>
-                <div class="input-group" id="refCodeGroup">
-                    <label class="input-label">Referral Code <span style="color:#888;font-size:11px">(optional)</span></label>
-                    <div class="input-wrapper">
-                        <i class="ph-bold ph-link input-icon"></i>
-                        <input type="text" class="form-input" id="registerRef" placeholder="e.g. RFTABC123">
+                    <div class="auth-input-group">
+                        <i class="ph-bold ph-link"></i>
+                        <input type="text" id="registerRef" placeholder="Referral Code (optional)">
                     </div>
-                </div>
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" id="agreeTerms">
-                    <label class="checkbox-label" for="agreeTerms">I agree to the Terms & Conditions</label>
-                </div>
-                <button class="btn-primary" onclick="handleRegister()">Create Account</button>
-                <div class="form-footer">
-                    <p>Already have an account? <span class="form-link" onclick="RFTApp.navigate('loginPage')">Sign In</span></p>
+                    <div class="auth-check-row">
+                        <input type="checkbox" id="agreeTerms">
+                        <label for="agreeTerms">I agree to the Terms & Conditions</label>
+                    </div>
+                    <button class="auth-submit-btn" onclick="handleRegister()">Create Account</button>
+                    <div class="auth-footer-links">
+                        <span>Already have an account? <strong onclick="RFTApp.navigate('loginPage')">Sign In</strong></span>
+                    </div>
                 </div>
             </div>
         </div>

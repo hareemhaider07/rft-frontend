@@ -554,14 +554,20 @@
     ['#332218','#161214'], ['#241e3a','#12101a'], ['#3a1e28','#141014']
   ];
 
-  // Deduplicate by YouTube ID
+  // Deduplicate by YouTube ID, then pick 10 random ones each call
   function buildUniqueTrailers() {
     const seen = new Set();
-    return TRAILERS.filter(t => {
+    const unique = TRAILERS.filter(t => {
       if (seen.has(t.id)) return false;
       seen.add(t.id);
       return true;
     });
+    // Fisher-Yates shuffle, then take first 10
+    for (let i = unique.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [unique[i], unique[j]] = [unique[j], unique[i]];
+    }
+    return unique.slice(0, 10);
   }
 
   // Try multiple thumbnail resolutions in sequence

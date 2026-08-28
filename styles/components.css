@@ -163,10 +163,10 @@
   display: flex; border-top: 1px solid rgba(0,0,0,.15);
   padding-top: 10px; margin-bottom: 14px;
 }
-.wstat       { flex: 1; text-align: center; border-right: 1px solid rgba(0,0,0,.15); }
+.wstat       { flex: 1; text-align: center; border-right: 1px solid rgba(0,0,0,.2); }
 .wstat:last-child { border-right: none; }
-.wstat-label { font-size: 9px; color: #1a1a1a; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .3px; }
-.wstat-val   { font-size: 11px; font-weight: 700; color: #1a1a1a; }
+.wstat-label { font-size: 9px; color: #000; font-weight: 700; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .3px; }
+.wstat-val   { font-size: 13px; font-weight: 800; color: #000; }
 .wallet-actions { display: flex; gap: 10px; }
 .btn-recharge.wallet-btn {
   flex: 1; background: rgba(0,0,0,.08); border: 1px solid rgba(0,0,0,.15);

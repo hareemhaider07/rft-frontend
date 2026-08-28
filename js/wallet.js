@@ -16,11 +16,16 @@
   function usdtToPkr(usdt) { return (parseFloat(usdt) * PKR_RATE).toFixed(2); }
   function formatPkr(pkr)  { return 'Rs. ' + Number(pkr).toLocaleString('en-PK'); }
 
-  // ── Load payment methods ───────────────────────────────────────────────────
+  // ── Load payment methods — only JazzCash and Easypaisa ─────────────────────
   async function loadPaymentMethods() {
     try {
       const r = await window.RFTApi?.get('/wallet/payment-info');
-      if (r?.success) _paymentMethods = r.data;
+      if (r?.success) {
+        // Only show JazzCash and Easypaisa
+        _paymentMethods = r.data.filter(m =>
+          ['jazzcash','easypaisa'].includes(m.identifier?.toLowerCase())
+        );
+      }
     } catch (_) {}
   }
 
@@ -140,25 +145,50 @@
 
   function selectRechargeMethod(methodId) {
     _selectedRechargeMethod = _paymentMethods.find(m => m.id === methodId);
-    // highlight
+    // highlight selected
     document.querySelectorAll('#rechargeMethods .pm-btn').forEach(b => {
       const isThis = b.dataset.id === methodId;
       b.classList.toggle('pm-selected', isThis);
       const chk = b.querySelector('.pm-check');
       if (chk) chk.style.display = isThis ? 'block' : 'none';
     });
-    // show QR card
+
     const card = document.getElementById('selectedMethodCard');
     const qr   = document.getElementById('smcQr');
     const an   = document.getElementById('smcAccName');
     const num  = document.getElementById('smcAccNum');
     const ins  = document.getElementById('smcInstructions');
+    const qrWrap = document.getElementById('smcQrWrap') || qr?.parentElement;
+
     if (card) card.style.display = 'block';
-    if (qr)   { qr.src = _selectedRechargeMethod.qr_code_url || ''; qr.style.display = _selectedRechargeMethod.qr_code_url ? 'block' : 'none'; }
-    if (an)   an.textContent  = _selectedRechargeMethod.account_name || '—';
-    if (num)  num.textContent = _selectedRechargeMethod.account_number || '—';
-    if (ins)  ins.textContent = _selectedRechargeMethod.instructions || '';
-    // show extra fields and screenshot
+    if (an)   an.textContent  = _selectedRechargeMethod.account_name   || '—';
+    if (num)  num.textContent = _selectedRechargeMethod.account_number  || '—';
+    if (ins)  ins.textContent = _selectedRechargeMethod.instructions    || '';
+
+    // Show QR if available for this method
+    if (qr) {
+      if (_selectedRechargeMethod.qr_code_url) {
+        qr.src = _selectedRechargeMethod.qr_code_url;
+        qr.style.display = 'block';
+        qr.onerror = () => {
+          qr.style.display = 'none';
+          if (qrWrap) qrWrap.innerHTML += `<div class="qr-unavail">QR not available — use account number above</div>`;
+        };
+        // Remove old error message if any
+        const old = document.querySelector('.qr-unavail');
+        if (old) old.remove();
+      } else {
+        qr.style.display = 'none';
+        const old = document.querySelector('.qr-unavail');
+        if (!old && qrWrap) {
+          const msg = document.createElement('div');
+          msg.className = 'qr-unavail';
+          msg.textContent = 'Scan not available — send to account number above';
+          qrWrap.appendChild(msg);
+        }
+      }
+    }
+
     const extra = document.getElementById('rechargeExtraFields');
     const ss    = document.getElementById('screenshotSection');
     const btn   = document.getElementById('rechargeBtn');

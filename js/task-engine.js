@@ -387,31 +387,44 @@
   async function renderMemberRankings() {
     const el = document.getElementById('rftVideoMemberRank');
     if (!el) return;
+
+    // Dummy data always shown — gives the app a live feel
+    const dummy = [
+      { rank:1, display_name:'H***n', vip_level:3, week_earned:'12500' },
+      { rank:2, display_name:'A***d', vip_level:2, week_earned:'8400'  },
+      { rank:3, display_name:'M***a', vip_level:2, week_earned:'6200'  },
+      { rank:4, display_name:'F***a', vip_level:1, week_earned:'4800'  },
+      { rank:5, display_name:'Z***b', vip_level:1, week_earned:'3600'  },
+    ];
+
+    // Try real data first, fall back to dummy
+    let leaders = dummy;
     try {
       const r = await window.RFTApi?.get('/user/leaderboard');
-      if (!r?.success || !r.data.length) {
-        el.innerHTML = `
-          <div class="rft-video-member-rank-head"><span>Member Rankings</span><span>Weekly Activity</span></div>
-          <div style="text-align:center;padding:20px;color:#666;font-size:13px">No data yet this week</div>`;
-        return;
-      }
-      const vipColors = ['#888','#CD7F32','#C0C0C0','#FFD700','#E5E4E2','#B9F2FF'];
-      el.innerHTML = `
-        <div class="rft-video-member-rank-head"><span>Member Rankings</span><span>Weekly Earnings</span></div>
-        ${r.data.map((m, i) => `
+      if (r?.success && r.data.length) leaders = r.data;
+    } catch (_) {}
+
+    const vipColors = ['#888','#CD7F32','#C0C0C0','#B8860B','#5080A0','#1A8070'];
+    el.innerHTML = `
+      <div class="rft-video-member-rank-head"><span>Member Rankings</span><span>This Week</span></div>
+      ${leaders.map((m, i) => {
+        const isPkr = typeof m.week_earned === 'string' && !m.score_label;
+        const display = isPkr
+          ? 'Rs. ' + Number(m.week_earned).toLocaleString('en-PK')
+          : (m.score_label || m.week_earned);
+        const color = vipColors[m.vip_level] || '#888';
+        return `
           <div class="rft-video-member-row">
-            <div class="rank-num" style="color:${i<3?'#d4a843':'#666'};font-weight:700;min-width:20px">#${m.rank}</div>
-            <div class="avatar" style="background:${vipColors[m.vip_level]}22;color:${vipColors[m.vip_level]}">${m.display_name.charAt(0)}</div>
+            <div class="rank-num" style="color:${i<3?'#B8860B':'#999'};font-weight:800">#${m.rank}</div>
+            <div class="avatar" style="background:${color}18;color:${color}">${m.display_name.charAt(0)}</div>
             <div class="name">
               ${m.display_name}
-              <small style="display:block;color:#6e6e73;font-size:10px">VIP ${m.vip_level} · Weekly activity</small>
+              <small style="display:block;color:#999;font-size:10px">VIP ${m.vip_level}</small>
             </div>
-            <div class="reward">${pkr(m.week_earned)}</div>
-          </div>
-        `).join('')}`;
-    } catch (_) {
-      el.innerHTML = '';
-    }
+            <div class="reward">${display}</div>
+          </div>`;
+      }).join('')}
+    `;
   }
 
   // ── Home balance refresh ───────────────────────────────────────────────────

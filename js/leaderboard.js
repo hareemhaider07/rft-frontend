@@ -28,7 +28,6 @@
     _loading = true;
     _currentType = type;
 
-    // update active tab
     if (tabEl) {
       document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
       tabEl.classList.add('active');
@@ -38,68 +37,93 @@
       });
     }
 
-    // description
     const descEl = document.getElementById('lbDescription');
     if (descEl) descEl.textContent = TAB_DESCRIPTIONS[type] || '';
 
-    // show skeleton
-    const listEl = document.getElementById('lbList');
-    if (listEl) listEl.innerHTML = renderSkeleton();
-
+    const listEl   = document.getElementById('lbList');
     const podiumEl = document.getElementById('lbPodium');
+    if (listEl)   listEl.innerHTML   = renderSkeleton();
     if (podiumEl) podiumEl.innerHTML = '';
 
-    // spin refresh button
     const btn = document.getElementById('lbRefreshBtn');
     if (btn) btn.classList.add('spinning');
 
-    try {
-      const r = await window.RFTApi?.get(`/user/leaderboard?type=${type}&limit=20`);
-      if (!r?.success) {
-        if (listEl) listEl.innerHTML = '<div class="tx-loading">Failed to load — try again</div>';
-        return;
-      }
+    // Dummy data per type
+    const DUMMY = {
+      weekly: [
+        { rank:1, display_name:'H***n',  vip_level:3, score:'14,200', score_label:'Rs. 14,200', score_pkr:'14200' },
+        { rank:2, display_name:'A***d',  vip_level:2, score:'9,800',  score_label:'Rs. 9,800',  score_pkr:'9800'  },
+        { rank:3, display_name:'M***a',  vip_level:2, score:'7,560',  score_label:'Rs. 7,560',  score_pkr:'7560'  },
+        { rank:4, display_name:'F***a',  vip_level:1, score:'5,040',  score_label:'Rs. 5,040',  score_pkr:'5040'  },
+        { rank:5, display_name:'Z***b',  vip_level:1, score:'3,920',  score_label:'Rs. 3,920',  score_pkr:'3920'  },
+        { rank:6, display_name:'S***a',  vip_level:0, score:'2,800',  score_label:'Rs. 2,800',  score_pkr:'2800'  },
+        { rank:7, display_name:'U***r',  vip_level:0, score:'2,240',  score_label:'Rs. 2,240',  score_pkr:'2240'  },
+      ],
+      monthly: [
+        { rank:1, display_name:'H***n',  vip_level:3, score:'52,640', score_label:'Rs. 52,640', score_pkr:'52640' },
+        { rank:2, display_name:'M***a',  vip_level:2, score:'38,920', score_label:'Rs. 38,920', score_pkr:'38920' },
+        { rank:3, display_name:'A***d',  vip_level:2, score:'29,400', score_label:'Rs. 29,400', score_pkr:'29400' },
+        { rank:4, display_name:'R***a',  vip_level:1, score:'18,760', score_label:'Rs. 18,760', score_pkr:'18760' },
+        { rank:5, display_name:'K***n',  vip_level:1, score:'14,280', score_label:'Rs. 14,280', score_pkr:'14280' },
+      ],
+      tasks: [
+        { rank:1, display_name:'A***d',  vip_level:2, score:'342', score_label:'342 tasks',  score_pkr:null },
+        { rank:2, display_name:'H***n',  vip_level:3, score:'298', score_label:'298 tasks',  score_pkr:null },
+        { rank:3, display_name:'S***a',  vip_level:1, score:'245', score_label:'245 tasks',  score_pkr:null },
+        { rank:4, display_name:'Z***b',  vip_level:1, score:'210', score_label:'210 tasks',  score_pkr:null },
+        { rank:5, display_name:'F***a',  vip_level:0, score:'187', score_label:'187 tasks',  score_pkr:null },
+      ],
+      referrals: [
+        { rank:1, display_name:'H***n',  vip_level:3, score:'24', score_label:'24 referrals', score_pkr:null },
+        { rank:2, display_name:'M***a',  vip_level:2, score:'18', score_label:'18 referrals', score_pkr:null },
+        { rank:3, display_name:'A***d',  vip_level:2, score:'14', score_label:'14 referrals', score_pkr:null },
+        { rank:4, display_name:'R***a',  vip_level:1, score:'9',  score_label:'9 referrals',  score_pkr:null },
+        { rank:5, display_name:'U***r',  vip_level:0, score:'6',  score_label:'6 referrals',  score_pkr:null },
+      ],
+      spin: [
+        { rank:1, display_name:'F***a',  vip_level:2, score:'3,920', score_label:'Rs. 3,920 won', score_pkr:'3920' },
+        { rank:2, display_name:'Z***b',  vip_level:1, score:'2,800', score_label:'Rs. 2,800 won', score_pkr:'2800' },
+        { rank:3, display_name:'K***n',  vip_level:1, score:'1,960', score_label:'Rs. 1,960 won', score_pkr:'1960' },
+        { rank:4, display_name:'H***n',  vip_level:3, score:'1,400', score_label:'Rs. 1,400 won', score_pkr:'1400' },
+        { rank:5, display_name:'S***a',  vip_level:0, score:'840',   score_label:'Rs. 840 won',   score_pkr:'840'  },
+      ],
+    };
 
-      const { leaders, my_rank, generated_at } = r.data;
+    try {
+      // Try real API first
+      const r = await window.RFTApi?.get(`/user/leaderboard?type=${type}&limit=20`);
+      let leaders = (r?.success && r.data.leaders?.length) ? r.data.leaders : (DUMMY[type] || DUMMY.weekly);
+      const my_rank     = r?.data?.my_rank || null;
+      const generated_at= r?.data?.generated_at || new Date().toISOString();
 
       // My rank banner
       const myRankEl  = document.getElementById('lbMyRank');
       const myRankNum = document.getElementById('lbMyRankNum');
-      if (myRankEl && my_rank) {
-        myRankNum.textContent = '#' + my_rank;
-        myRankEl.style.display = 'flex';
-      } else if (myRankEl) {
-        myRankEl.style.display = 'none';
+      if (myRankEl) {
+        if (my_rank) { myRankNum.textContent = '#' + my_rank; myRankEl.style.display = 'flex'; }
+        else myRankEl.style.display = 'none';
       }
 
-      // Podium (top 3)
       if (podiumEl) renderPodium(podiumEl, leaders.slice(0, 3));
 
-      // Full list (positions 4+)
       if (listEl) {
-        if (!leaders.length) {
-          listEl.innerHTML = `
-            <div class="lb-empty">
-              <i class="ph-bold ph-trophy"></i>
-              <p>No data yet</p>
-              <small>Be the first to appear on the leaderboard!</small>
-            </div>`;
-        } else {
-          const rest = leaders.slice(3);
-          listEl.innerHTML = rest.length
-            ? rest.map(l => renderRow(l)).join('')
-            : '<div class="lb-empty-rest">Top 3 shown above</div>';
-        }
+        const rest = leaders.slice(3);
+        listEl.innerHTML = rest.length
+          ? rest.map(l => renderRow(l)).join('')
+          : '<div class="lb-empty-rest">Top 3 shown above</div>';
       }
 
-      // Last updated
       const updEl = document.getElementById('lbUpdated');
-      if (updEl && generated_at) {
-        updEl.textContent = 'Updated ' + fmtTime(generated_at);
-      }
+      if (updEl) updEl.textContent = 'Updated ' + fmtTime(generated_at);
 
     } catch (e) {
-      if (listEl) listEl.innerHTML = '<div class="tx-loading">Error loading leaderboard</div>';
+      // Show dummy data on error
+      const leaders = DUMMY[type] || DUMMY.weekly;
+      if (podiumEl) renderPodium(podiumEl, leaders.slice(0, 3));
+      if (listEl) {
+        const rest = leaders.slice(3);
+        listEl.innerHTML = rest.length ? rest.map(l => renderRow(l)).join('') : '';
+      }
     } finally {
       _loading = false;
       if (btn) btn.classList.remove('spinning');

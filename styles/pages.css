@@ -2569,3 +2569,108 @@
 .iab-overlay-msg i    { font-size: 40px; color: #f97316; }
 .iab-overlay-msg p    { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .iab-overlay-msg small{ font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+
+/* ============================================================
+   Spacing fixes — Wallet page sections
+   ============================================================ */
+.wallet-page .wallet-card {
+  margin-bottom: 16px;
+}
+.wallet-page .tx-tabs {
+  margin-bottom: 12px;
+}
+.wallet-page .transaction-list {
+  margin-bottom: 80px;
+}
+
+/* Recharge page section gaps */
+.recharge-page .recharge-info-card {
+  margin-bottom: 16px;
+}
+.recharge-page .amount-input-box {
+  margin-bottom: 16px;
+}
+.recharge-page .section-title {
+  margin-bottom: 8px;
+}
+.recharge-page .payment-methods-grid {
+  margin-bottom: 16px;
+}
+.recharge-page .selected-method-card {
+  margin-bottom: 16px;
+}
+.recharge-page .input-group {
+  margin-bottom: 16px;
+}
+.recharge-page #screenshotSection {
+  margin-bottom: 16px;
+}
+.recharge-page .btn-primary {
+  margin: 0 15px 30px;
+}
+
+/* Withdraw page section gaps */
+.withdraw-page .wallet-mini-card {
+  margin-bottom: 16px;
+}
+.withdraw-page .amount-input-box {
+  margin-bottom: 16px;
+}
+.withdraw-page .section-title {
+  margin-bottom: 8px;
+}
+.withdraw-page .payment-methods-grid {
+  margin-bottom: 16px;
+}
+.withdraw-page .input-group {
+  margin-bottom: 16px;
+}
+.withdraw-page .kyc-warning {
+  margin-bottom: 16px;
+}
+.withdraw-page .btn-primary {
+  margin: 0 15px 30px;
+}
+
+/* ============================================================
+   Spacing fixes — Referral / Team page sections
+   ============================================================ */
+.referral-page .referral-link-card {
+  margin-bottom: 16px;
+}
+.referral-page .referral-qr-section {
+  margin-bottom: 16px;
+}
+.referral-page .team-performance-card {
+  margin-bottom: 16px;
+}
+.referral-page .tx-tabs {
+  margin-bottom: 12px;
+}
+.referral-page .team-list {
+  padding-bottom: 80px;
+}
+
+/* Deposit QR section spacing — on recharge page */
+.recharge-page .referral-qr-section,
+.referral-page .rqr-wrap {
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   QR unavailable fallback message
+   ============================================================ */
+.qr-unavail {
+  display: inline-block;
+  margin: 8px auto 0;
+  padding: 8px 14px;
+  background: rgba(255, 183, 3, 0.1);
+  border: 1px solid rgba(255, 183, 3, 0.4);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--gold);
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}

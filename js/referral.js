@@ -18,6 +18,7 @@
       const r = await window.RFTApi.get('/referral/info');
       if (!r.success) { card.innerHTML = '<div class="rlc-loading">Failed to load</div>'; return; }
       const d = r.data;
+      const totalPkr = Math.round(parseFloat(d.total_commission_usdt || 0) * 280);
       card.innerHTML = `
         <div class="rlc-title">Your Referral Link</div>
         <div class="rlc-link-row">
@@ -44,8 +45,7 @@
         </div>
         <div class="rlc-commission">
           <div class="rlc-comm-title">Total Commissions Earned</div>
-          <div class="rlc-comm-val">${d.total_commission_usdt} USDT</div>
-          <div class="rlc-comm-pkr">≈ Rs. ${Number(d.total_commission_pkr).toLocaleString()}</div>
+          <div class="rlc-comm-val">Rs. ${totalPkr.toLocaleString('en-PK')}</div>
         </div>
         <div class="rlc-rates">
           <div class="rlc-rate"><span>L1 Commission</span><strong>${d.commission_rates.level1}</strong></div>
@@ -83,7 +83,7 @@
           </div>
           <div class="tmr-right">
             <div class="tmr-vip">VIP ${m.vip_level||0}</div>
-            <div class="tmr-comm">+${m.total_commission_usdt} USDT</div>
+            <div class="tmr-comm">+Rs. ${Math.round(parseFloat(m.total_commission_usdt||0)*280).toLocaleString('en-PK')}</div>
           </div>
         </div>
       `).join('');

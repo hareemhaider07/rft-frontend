@@ -102,16 +102,21 @@
       _ctx.lineWidth = 1.5;
       _ctx.stroke();
 
-      // Prize label
+      // Prize label — show PKR instead of USDT
       _ctx.save();
       _ctx.translate(cx, cy);
       _ctx.rotate(startAngle + segAngle / 2);
       _ctx.textAlign = 'right';
       _ctx.fillStyle = '#ffffff';
-      _ctx.font = 'bold 11px Inter, sans-serif';
+      _ctx.font = 'bold 10px Inter, sans-serif';
       _ctx.shadowColor = 'rgba(0,0,0,0.5)';
       _ctx.shadowBlur  = 3;
-      _ctx.fillText(prize.name, radius - 8, 4);
+      // Convert USDT prize name to PKR for wheel display
+      let label = prize.name;
+      if (prize.prize_type === 'usdt') {
+        label = 'Rs.' + Math.round(parseFloat(prize.prize_value) * 280).toLocaleString('en-PK');
+      }
+      _ctx.fillText(label, radius - 8, 4);
       _ctx.restore();
     });
 
@@ -264,17 +269,26 @@
     if (card) card.style.display = 'none';
   }
 
-  // ── Prize grid ─────────────────────────────────────────────────────────────
+  // ── Prize grid — PKR display only ─────────────────────────────────────────
   function renderPrizeGrid(prizes) {
     const el = document.getElementById('spinPrizeGrid');
     if (!el) return;
-    el.innerHTML = prizes.map(p => `
-      <div class="spg-item">
-        <div class="spg-dot" style="background:${p.color}"></div>
-        <div class="spg-name">${p.name}</div>
-        <div class="spg-prob">${(parseFloat(p.probability) * 100).toFixed(0)}%</div>
-      </div>
-    `).join('');
+    const PKR = 280;
+    el.innerHTML = prizes.map(p => {
+      let displayName = p.name;
+      // Convert USDT values to PKR in the display name
+      if (p.prize_type === 'usdt') {
+        const pkrAmt = Math.round(parseFloat(p.prize_value) * PKR);
+        displayName = 'Rs. ' + pkrAmt.toLocaleString('en-PK');
+      }
+      return `
+        <div class="spg-item">
+          <div class="spg-dot" style="background:${p.color}"></div>
+          <div class="spg-name">${displayName}</div>
+          <div class="spg-prob">${(parseFloat(p.probability) * 100).toFixed(0)}%</div>
+        </div>
+      `;
+    }).join('');
   }
 
   // ── Spin history ───────────────────────────────────────────────────────────

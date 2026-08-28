@@ -34,7 +34,7 @@
   const eventTypes = [
     {
       icon: '⭐',
-      color: '#d4a843',
+      color: '#B8860B',
       descList: ['Activated VIP Bronze Plan','Upgraded to VIP Silver Plan',
                  'Activated VIP Gold Plan','Joined VIP Platinum Tier'],
       amounts: [3500, 7500, 15000, 30000, 50000],
@@ -42,7 +42,7 @@
     },
     {
       icon: '📹',
-      color: '#22c55e',
+      color: '#1A7F4B',
       descList: ['Completed Daily Video Tasks','Earned Task Commission',
                  'Submitted Project Orders','Task Rating Bonus Claimed'],
       amounts: [240, 560, 1200, 2450, 4800],
@@ -50,7 +50,7 @@
     },
     {
       icon: '🎡',
-      color: '#a855f7',
+      color: '#7B3FA0',
       descList: ['Lucky Draw Cash Reward','Won Spin Wheel Bonus',
                  'Lucky Spin Special Prize'],
       amounts: [150, 300, 800, 1500, 5000],
@@ -58,7 +58,7 @@
     },
     {
       icon: '💸',
-      color: '#3b82f6',
+      color: '#C0392B',
       descList: ['Successful Withdrawal to Bank','Withdrew to Easypaisa',
                  'Withdrew to JazzCash','Withdrew via Raast'],
       amounts: [1200, 3400, 6800, 14500, 28000],
@@ -66,7 +66,7 @@
     },
     {
       icon: '👥',
-      color: '#06b6d4',
+      color: '#2471A3',
       descList: ['Earned Referral Commission','Team Member Bonus Received',
                  'Level 1 Referral Reward'],
       amounts: [120, 280, 600, 1400, 3200],
@@ -92,7 +92,7 @@
   function createItemHTML(item) {
     return `<li class="activity-item">
       <div class="act-left">
-        <img class="act-avatar" src="${item.avatar}" alt="" loading="lazy" onerror="this.src='https://placehold.co/36x36/1a1a1a/d4a843?text=${item.user.charAt(0)}'">
+        <img class="act-avatar" src="${item.avatar}" alt="" loading="lazy" onerror="this.src='https://placehold.co/36x36/FFF8E7/B8860B?text=${item.user.charAt(0)}'">
         <div class="act-info">
           <span class="act-user">${item.user}</span>
           <span class="act-desc"><span class="act-icon">${item.icon}</span> ${item.desc}</span>

@@ -36,14 +36,16 @@
     try {
       const r = await window.RFTApi?.get('/spin/prizes');
 
-      // Show actual error so we can debug
       if (!r?.success) {
+        _prizes = WHEEL_PRIZES;
+        drawWheel(0);
+        renderPrizeGrid(WHEEL_PRIZES);
         const subEl = document.getElementById('spinSubText');
         if (subEl) subEl.textContent = 'Error: ' + (r?.message || 'API call failed');
         console.error('Spin prizes failed:', r);
         return;
       }
-      _prizes   = r.data.prizes || [];
+      _prizes   = WHEEL_PRIZES;   // always use 8 unique segments for the wheel
       _canSpin  = r.data.can_spin;
 
       // Update status bar
@@ -73,12 +75,25 @@
       }
     } catch (e) {
       console.error('loadPrizes error:', e);
+      _prizes = WHEEL_PRIZES;
+      drawWheel(0);
+      renderPrizeGrid(WHEEL_PRIZES);
       const subEl = document.getElementById('spinSubText');
       if (subEl) subEl.textContent = 'Error loading prizes: ' + e.message;
     }
   }
 
-  // ── Draw wheel ─────────────────────────────────────────────────────────────
+  // ── 8 unique wheel prizes (display only — one segment each) ─────────────
+  const WHEEL_PRIZES = [
+    { id: 'w1', name: 'Rs. 140',    color: '#E63946', prize_type: 'usdt',   prize_value: '0.5',  probability: '0.05' },
+    { id: 'w2', name: 'Rs. 280',    color: '#d4a843', prize_type: 'usdt',   prize_value: '1.0',  probability: '0.02' },
+    { id: 'w3', name: 'Rs. 28',     color: '#2A9D8F', prize_type: 'usdt',   prize_value: '0.1',  probability: '0.20' },
+    { id: 'w4', name: 'Rs. 56',     color: '#457B9D', prize_type: 'usdt',   prize_value: '0.2',  probability: '0.10' },
+    { id: 'w5', name: '50 Points',  color: '#1D3557', prize_type: 'points', prize_value: '50',   probability: '0.15' },
+    { id: 'w6', name: '100 Points', color: '#6A0572', prize_type: 'points', prize_value: '100',  probability: '0.10' },
+    { id: 'w7', name: '20 Points',  color: '#2196F3', prize_type: 'points', prize_value: '20',   probability: '0.25' },
+    { id: 'w8', name: 'Try Again',  color: '#555555', prize_type: 'empty',  prize_value: '0',    probability: '0.13' }
+  ];
   function drawWheel(rotationAngle) {
     if (!_ctx || !_prizes.length) return;
     const cx = 160, cy = 160, radius = 148;
@@ -163,8 +178,20 @@
       return;
     }
 
-    // Find the index of the winning prize on the wheel
-    const winnerIndex = _prizes.findIndex(p => p.id === result.prize.id);
+    // Map API result to one of the 8 wheel segments by prize_type
+    let winnerIndex = 7; // default to "Try Again"
+    if (result.prize.prize_type === 'usdt') {
+      const pkr = Math.round(parseFloat(result.prize.prize_value) * 280);
+      if (pkr >= 280)      winnerIndex = 1; // Rs. 280
+      else if (pkr >= 140) winnerIndex = 0; // Rs. 140
+      else if (pkr >= 56)  winnerIndex = 3; // Rs. 56
+      else                 winnerIndex = 2; // Rs. 28
+    } else if (result.prize.prize_type === 'points') {
+      const pts = parseInt(result.prize.prize_value);
+      if (pts >= 100)     winnerIndex = 5; // 100 Points
+      else if (pts >= 50) winnerIndex = 4; // 50 Points
+      else                winnerIndex = 6; // 20 Points
+    }
     const segAngle    = (2 * Math.PI) / _prizes.length;
 
     // Target angle: spin 5-8 full rotations + land on winner segment

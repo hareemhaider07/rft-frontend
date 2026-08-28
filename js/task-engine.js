@@ -460,7 +460,6 @@
       renderTaskHall('pageTaskList', 'pageTaskDone', 'pageTaskLeft');
       renderTrailerReel();
     });
-    });
     window.openTaskPreview  = openTaskPreview;
     window.beginTask        = beginTask;
     window.closeTaskPreview = closeTaskPreview;

@@ -334,7 +334,13 @@
         <div class="spin-hist-row ${h.prize_type === 'empty' ? 'shr-empty' : 'shr-win'}">
           <div class="shr-icon">${typeIcon[h.prize_type] || '🎡'}</div>
           <div class="shr-info">
-            <div class="shr-name">${h.prize_name}</div>
+            <div class="shr-name">${
+              h.prize_type === 'usdt'
+                ? 'Rs. ' + Math.round(parseFloat(h.prize_value) * PKR_RATE).toLocaleString('en-PK')
+                : h.prize_type === 'points'
+                  ? h.prize_value + ' Points'
+                  : 'Try Again'
+            }</div>
             <div class="shr-date">${fmtDate(h.created_at)}</div>
           </div>
           <div class="shr-val ${h.prize_type === 'empty' ? '' : 'shr-val-win'}">

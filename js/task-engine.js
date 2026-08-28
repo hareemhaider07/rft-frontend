@@ -458,6 +458,8 @@
     });
     document.addEventListener('rft:page:tasksPage', () => {
       renderTaskHall('pageTaskList', 'pageTaskDone', 'pageTaskLeft');
+      renderTrailerReel();
+    });
     });
     window.openTaskPreview  = openTaskPreview;
     window.beginTask        = beginTask;
@@ -467,4 +469,173 @@
   window.RFTTaskEngine = { fetchTasks, renderTaskHall, openTaskPreview, beginTask, closeTaskPreview, renderMemberRankings, refreshHomeBalance, init };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
+
+  // ── Trailer Reel ──────────────────────────────────────────────────────────
+  const TRAILERS = [
+    // Hollywood
+    { id:'62bIsvRcPv0', studio:'Sony Pictures',        title:'Spider-Man: Brand New Day',          meta:'New Trailer · In theaters' },
+    { id:'jxU8FU3o75A', studio:'Sony Pictures',        title:'Insidious: Out of the Further',       meta:'Official Trailer · Aug 21' },
+    { id:'4U-wmj5D47s', studio:'Universal / Blumhouse',title:'Other Mommy',                         meta:'Official Trailer · Oct 9' },
+    { id:'irVNGjRFZGk', studio:'Marvel Studios',       title:'Avengers: Doomsday',                  meta:'Official Trailer · Dec 18' },
+    { id:'3oB9AxspVow', studio:'Warner Bros.',          title:'The End of Oak Street',               meta:'Official Trailer · IMAX Aug 14' },
+    { id:'ZSdOwt-G49w', studio:'Illumination',          title:'Minions & Monsters',                  meta:'Official Trailer · July 1' },
+    { id:'zhApeaHMvfs', studio:'Sony Pictures',        title:'Jumanji: Open World',                  meta:'Official Trailer · Christmas Day' },
+    { id:'ZVkrhHebz1Q', studio:'Focus Features',       title:'The Uprising',                         meta:'Official Trailer · Sept 10' },
+    { id:'f_bKjZeJBBI', studio:'Universal Pictures',   title:'The Odyssey',                          meta:'Christopher Nolan · July 17' },
+    { id:'FKSdXH89jbo', studio:'Lionsgate',             title:'Mutiny',                               meta:'Jason Statham' },
+    { id:'n7f6hlKsxxo', studio:'Disney',                title:'Moana',                                meta:'Live Action · July 10' },
+    { id:'7xfqITrMDcI', studio:'Apple TV+',             title:'Matchbox The Movie',                   meta:'Streaming Oct 9' },
+    { id:'zEbpmROmKBQ', studio:'Paramount Pictures',   title:'Heart of the Beast',                   meta:'Brad Pitt · In theaters' },
+    { id:'kgv8jf_8dm0', studio:'Netflix',               title:'Apex',                                 meta:'Charlize Theron' },
+    { id:'mNd1gb19A-c', studio:'Sony Pictures',        title:'Resident Evil',                         meta:'Official Trailer · 4K' },
+    { id:'48CtX6OgU3s', studio:'Lionsgate',             title:'The Housemaid',                        meta:'Sydney Sweeney, Amanda Seyfried' },
+    { id:'i36Zw32GfRQ', studio:'Universal Pictures',   title:'Reminders of Him',                     meta:'Colleen Hoover' },
+    { id:'FmM2giDwLAE', studio:'Universal Pictures',   title:'Violent Night 2',                      meta:'Official Trailer · Dec 4' },
+    // Bollywood
+    { id:'Uu2QK9Z9X5E', studio:'Red Chillies',         title:'King',                                 meta:'Shah Rukh Khan · Dec 24' },
+    { id:'lNaSdnz2I8g', studio:'Sony Pictures',        title:'Ramayana',                              meta:'Ranbir Kapoor, Yash · Diwali 2026' },
+    { id:'IG-eByZdz6Y', studio:'T-Series',              title:'Dhamaal 4',                            meta:'Ajay Devgn, Riteish Deshmukh' },
+    { id:'R704yP3dlXw', studio:'Star Studios',          title:'Welcome To The Jungle',                meta:'Akshay Kumar · In cinemas now' },
+    { id:'hlfz1ep8IL4', studio:'KVN Productions',       title:'Haiwaan',                              meta:'Akshay Kumar, Saif Ali Khan' },
+    { id:'zfopTfY3lBU', studio:'Maddock Films',         title:'Eetha',                                meta:'Shraddha Kapoor, Randeep Hooda' },
+    { id:'fJ9dmfWRzlM', studio:'RKD Studios',           title:'Mahakali',                             meta:'Akshaye Khanna' },
+    { id:'b8jZdpIzG4k', studio:'SRF',                   title:'Ishqnama',                             meta:'In cinemas 24th July' },
+    { id:'rRQ8oKCoYrQ', studio:'Dharma Productions',    title:'Chand Mera Dil',                       meta:'Ananya Panday, Lakshya' },
+    { id:'q2zwd3OVcnM', studio:'RTake Studios',         title:'Daadi Ki Shaadi',                      meta:'Neetu Kapoor, Kapil Sharma' },
+    { id:'h1Q_Oykycns', studio:'Netflix India',         title:'Toaster',                              meta:'Rajkummar Rao, Sanya Malhotra' },
+    { id:'8p73KvHdcuE', studio:'Netflix India',         title:'Dhindora 2',                           meta:'@BBKiVines' },
+    { id:'PRUTWluKRW8', studio:'Applause Entertainment',title:'Main Vaapas Aaunga',                   meta:'Diljit, Sharvari' },
+    { id:'5vMWZhHPlaw', studio:'Excel Movies',          title:'Mirzapur The Movie',                   meta:'Ali Fazal, Pankaj Tripathi' },
+    { id:'1ya87ENCRj0', studio:'Indian Cinema',         title:'Awarapan 2',                           meta:'Emraan Hashmi, Disha Patani · Aug 14' },
+    { id:'2wtddXiROWA', studio:'Indian Cinema',         title:'Jan Neta',                             meta:'Thalapathy Vijay, Pooja Hegde' },
+    { id:'unf8x_aZg9Y', studio:'Indian Cinema',         title:'Ikka',                                 meta:'Sunny Deol, Akshaye Khanna · Netflix' },
+    { id:'XW1RkKiRnsg', studio:'Indian Cinema',         title:'Bhooth Bangla',                        meta:'Akshay Kumar, Tabu, Paresh Rawal' },
+    { id:'YpGhCA2X3gU', studio:'Indian Cinema',         title:'Hanuman Ansh',                         meta:'In cinemas July 31' },
+    { id:'6_MaiogJvSE', studio:'Indian Cinema',         title:'Street Fighter',                       meta:'Hindi Trailer · Oct 16' },
+    // Pakistani Cinema
+    { id:'PVWxat5Z0zs', studio:'Pakistani Cinema',      title:'ZOMBEID',                              meta:'Fahad Mustafa, Mehwish Hayat' },
+    { id:'jewsWOoP6nQ', studio:'Pakistani Cinema',      title:'Mango Jutt',                           meta:'Faisal Qureshi, Hareem Farooq' },
+    { id:'ouzEuRvdVC0', studio:'Pakistani Cinema',      title:'Mera Lyari',                           meta:'Ayesha Omar, Dananeer Mobeen' },
+    { id:'jw5dTVTX9zo', studio:'Pakistani Cinema',      title:'Teefa In Trouble',                     meta:'Ali Zafar, Maya Ali · 2018' },
+    { id:'KozPWehBjvs', studio:'Pakistani Cinema',      title:'Aag Lagay Basti Mein',                 meta:'Fahad Mustafa, Mahira Khan' },
+    { id:'UwZBNbxBgM0', studio:'Pakistani Cinema',      title:'Umro Ayyar: A New Beginning',          meta:'Usman Mukhtar, Faran Tahir' },
+    { id:'pNPFlT--b94', studio:'Pakistani Cinema',      title:'Luv Di Saun',                          meta:'Farhan Saeed, Mamya Shajaffar · Eid' },
+    { id:'A5ejkDCT1CA', studio:'Pakistani Cinema',      title:'Superstar',                            meta:'Mahira Khan, Bilal Ashraf' },
+    { id:'EJ2J07ca18w', studio:'Pakistani Cinema',      title:'Parey Hut Love',                       meta:'ARY Films' },
+    { id:'Z0SpyQ588NQ', studio:'Pakistani Cinema',      title:'BULLAH',                               meta:'Official Trailer · Eid 2026' },
+    { id:'RXo-y4dugVQ', studio:'Pakistani Cinema',      title:'Khan Tumhara',                         meta:'Bilal Ashraf, Maya Ali · Eid ul-Adha' },
+    { id:'pEWqOAcYgpQ', studio:'Pakistani Cinema',      title:'The Legend of Maula Jatt',             meta:'Official Theatrical Trailer 2022' },
+    { id:'Y3zwLrr9TKE', studio:'Pakistani Cinema',      title:'Zindagi Tamasha',                      meta:'Circus of Life' },
+    { id:'TUM6liPArUE', studio:'Pakistani Cinema',      title:'Jawani Phir Nahi Ani 2',               meta:'ARY Films' },
+    { id:'MhMHXeewXN4', studio:'Pakistani Cinema',      title:'Parchi',                               meta:'Ali Rehman Khan, Hareem Farooq' },
+    { id:'3RAlhb3WLY8', studio:'Pakistani Cinema',      title:'Kamli',                                meta:'Saba Qamar, Sania Saeed' },
+    { id:'Xj18uwvIo8Y', studio:'Pakistani Cinema',      title:'Neelofar',                             meta:'Fawad Khan, Mahira Khan' },
+    { id:'rVpljgnB100', studio:'Pakistani Cinema',      title:'DELHI GATE',                           meta:'Nadeem Cheema, Javed Sheikh' },
+    { id:'ekdP7w7irrQ', studio:'Pakistani Cinema',      title:'London Nahi Jaunga',                   meta:'Humayun Saeed, Mehwish Hayat' },
+    { id:'jTndSSde6Z8', studio:'Pakistani Cinema',      title:'Love Guru',                            meta:'Humayun Saeed, Mahira Khan · Eid' },
+    { id:'AOuEl2JHnFg', studio:'Pakistani Cinema',      title:'Load Wedding',                         meta:'Fahad Mustafa, Mehwish Hayat' },
+    { id:'yJk_aZTvj9M', studio:'Pakistani Cinema',      title:'Money Back Guarantee',                 meta:'Fawad Khan, Wasim Akram' },
+    { id:'f8IQfwadVGw', studio:'Pakistani Cinema',      title:'Quaid-e-Azam Zindabad',               meta:'Fahad Mustafa, Mahira Khan' },
+    { id:'FJ2Fm-4CR5k', studio:'Pakistani Cinema',      title:'Parwaaz Hai Junoon',                   meta:'Hamza Ali Abbasi, Ahad Raza Mir' },
+    { id:'iqup82jtx8Q', studio:'Pakistani Cinema',      title:'Verna',                                meta:'Mahira Khan · Shoaib Mansoor' },
+    { id:'WgzXHQSFtxY', studio:'Pakistani Cinema',      title:'COMBATIVO AKA COMMANDO ALI',           meta:'Greatest Pakistani Action Movie 2026' },
+    { id:'1t3dMZ4B9JM', studio:'Pakistani Cinema',      title:'Khel Khel Mein',                       meta:'Sajal Aly, Bilal Abbas' },
+    { id:'EdM1mugi3T8', studio:'Pakistani Cinema',      title:'36 GARH',                              meta:'Moammar Rana, Shafqat Cheema' },
+    { id:'tCT017S36hc', studio:'Indian Cinema',         title:'VIBE',                                 meta:'In cinemas Sept 18' },
+    { id:'jX6UJY3oXAc', studio:'Indian Cinema',         title:'The India Story',                      meta:'July 24' },
+    { id:'7457LdEDt4I', studio:'Indian Cinema',         title:'Kamaal Dhamaal Malamaal',              meta:'Nana Patekar, Paresh Rawal' },
+    { id:'RWOL5S6uxaQ', studio:'Aamir Khan Talkies',    title:'Batwara 1947',                         meta:'Shabana Azmi, Sunny Deol' },
+    { id:'9FUd-D4FWjw', studio:'Dharma Productions',    title:'Sunny Sanskari Ki Tulsi Kumari',       meta:'Varun, Janhvi · In cinemas' },
+    { id:'dW8_SNM-5Kc', studio:'Tips Films',             title:'Hai Jawani Toh Ishq Hona Hai',         meta:'Varun Dhawan, Mrunal Thakur' },
+  ];
+
+  // Gradient palette for poster backgrounds (site warm/gold tones)
+  const TR_PALETTES = [
+    ['#3a2f1e','#14121a'], ['#2f1e2e','#101018'], ['#1e2f2a','#101418'],
+    ['#332218','#161214'], ['#241e3a','#12101a'], ['#3a1e28','#141014']
+  ];
+
+  // Deduplicate by YouTube ID
+  function buildUniqueTrailers() {
+    const seen = new Set();
+    return TRAILERS.filter(t => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }
+
+  // Try multiple thumbnail resolutions in sequence
+  function attachThumbFallback(img, id) {
+    const urls = [
+      `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+      `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+    ];
+    let attempt = 0;
+    img.onerror = function () {
+      attempt++;
+      if (attempt < urls.length) {
+        img.src = urls[attempt];
+      } else {
+        img.style.display = 'none';
+        const fb = img.nextElementSibling;
+        if (fb) fb.style.display = 'flex';
+      }
+    };
+    img.src = urls[0];
+  }
+
+  function renderTrailerReel() {
+    const grid    = document.getElementById('trailerGrid');
+    const counter = document.getElementById('trailerCount');
+    if (!grid) return;
+
+    const list = buildUniqueTrailers();
+    if (counter) counter.textContent = list.length;
+
+    const playSvg = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+
+    grid.innerHTML = '';
+    list.forEach((t, i) => {
+      const [a, b] = TR_PALETTES[i % TR_PALETTES.length];
+
+      const card = document.createElement('a');
+      card.className   = 'tr-card';
+      card.href        = `https://www.youtube.com/watch?v=${t.id}`;
+      card.target      = '_blank';
+      card.rel         = 'noopener noreferrer';
+      card.setAttribute('aria-label', `Watch ${t.title} on YouTube`);
+
+      card.innerHTML = `
+        <div class="tr-poster" style="--pa:${a};--pb:${b}">
+          <img class="tr-thumb" alt="${t.title}" loading="lazy" decoding="async">
+          <div class="tr-thumb-fallback" style="display:none">
+            <span>${t.title}</span>
+          </div>
+          <div class="tr-play">${playSvg}</div>
+          <div class="tr-overlay"></div>
+        </div>
+        <div class="tr-body">
+          <span class="tr-studio">${t.studio}</span>
+          <div class="tr-title">${t.title}</div>
+          <div class="tr-meta">${t.meta}</div>
+          <div class="tr-yt-row">
+            <svg viewBox="0 0 24 24" fill="#ff0033" width="14" height="14">
+              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z"/>
+            </svg>
+            Watch on YouTube
+          </div>
+        </div>
+      `;
+
+      // Attach thumb after element is in DOM tree (onerror needs live element)
+      const img = card.querySelector('.tr-thumb');
+      attachThumbFallback(img, t.id);
+
+      grid.appendChild(card);
+    });
+  }
+
+  window.renderTrailerReel = renderTrailerReel;
 })();

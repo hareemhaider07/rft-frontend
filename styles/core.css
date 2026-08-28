@@ -515,27 +515,25 @@ body {
 
 /* Form card: no gap, no overlap border — just flows right after banner */
 .auth-form-card {
-  margin-top: 0 !important;
+  margin: 0 !important;
+  padding: 28px 22px 32px !important;
   border-radius: 0 !important;
   border-left: none !important;
   border-right: none !important;
-  border-top: none !important;
+  border-top: 1px solid var(--border) !important;
   box-shadow: none !important;
-  position: relative;
-  z-index: 2;
   background: var(--white) !important;
-  margin-bottom: 40px !important;
-  padding-top: 28px !important;
+  flex: 1;
 }
 
 /* Login/Register pages: flush top, full scroll */
 #loginPage,
 #registerPage {
   padding-top: 0 !important;
+  padding-bottom: 40px !important;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--white);
-}
 }

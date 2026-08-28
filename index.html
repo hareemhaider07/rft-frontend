@@ -348,18 +348,20 @@
 
         <!-- ═══════════ TASKS ═══════════ -->
         <div class="page tasks-page" id="tasksPage">
-            <div class="page-header">
-                <button class="back-btn" onclick="RFTApp.navigate('homePage')"><i class="ph-bold ph-arrow-left"></i></button>
-                <h2>Task Hall</h2>
-                <button class="pi-edit-btn" onclick="RFTApp.navigate('myTasksPage')"><i class="ph-bold ph-list-bullets"></i> My Tasks</button>
+            <!-- Cinematic hero header -->
+            <div class="tr-hero">
+                <div class="tr-hero-bg"></div>
+                <div class="tr-hero-content">
+                    <div class="tr-hero-eyebrow"><i class="ph-bold ph-film-slate"></i> Now Showing</div>
+                    <h1 class="tr-hero-title">Trailer <span>Reel</span></h1>
+                    <p class="tr-hero-sub">10 fresh picks every visit · tap to watch on YouTube</p>
+                </div>
             </div>
-            <!-- ── Trailer Reel ────────────────────────────────────────── -->
+            <!-- Trailer list -->
             <div class="trailer-reel-section">
-                <div class="trailer-filmstrip"></div>
                 <div class="trailer-grid" id="trailerGrid">
                     <div class="trailer-loading"><i class="ph-bold ph-film-strip"></i> Loading trailers…</div>
                 </div>
-                <div class="trailer-filmstrip" style="margin-top:0"></div>
             </div>
         </div>
 

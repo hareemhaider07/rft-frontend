@@ -427,7 +427,7 @@ body {
 .auth-banner {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 220px;
   overflow: hidden;
   flex-shrink: 0;
   background: #111;
@@ -489,11 +489,10 @@ body {
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Logo: centered, sits in the lower-middle of the banner
-   White pill background so it's always readable */
+/* Logo centered at the bottom of the banner */
 .auth-banner-logo {
   position: absolute;
-  bottom: 48px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
@@ -502,38 +501,38 @@ body {
   justify-content: center;
   background: rgba(255,255,255,0.92);
   border-radius: 50px;
-  padding: 10px 24px;
+  padding: 8px 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
   backdrop-filter: blur(4px);
   white-space: nowrap;
 }
 
 .auth-logo-img {
-  width: 150px;
+  width: 130px;
   height: auto;
 }
 
-/* Form card: no gap, no overlap border — just flows right after banner */
+/* Form card: flows directly under banner, clean flat style */
 .auth-form-card {
   margin: 0 !important;
-  padding: 28px 22px 32px !important;
+  padding: 24px 20px 36px !important;
   border-radius: 0 !important;
   border-left: none !important;
   border-right: none !important;
   border-top: 1px solid var(--border) !important;
   box-shadow: none !important;
   background: var(--white) !important;
-  flex: 1;
 }
 
-/* Login/Register pages: flush top, full scroll */
+/* Login/Register pages: full-height scroll container */
 #loginPage,
 #registerPage {
   padding-top: 0 !important;
-  padding-bottom: 40px !important;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--white);
+  padding-bottom: 0 !important;
+  min-height: 100vh !important;
+  height: auto !important;
+  display: block !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  background: var(--white) !important;
 }

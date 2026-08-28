@@ -424,44 +424,45 @@ body {
    Auth Banner — movie grid header (WealthReel style)
    ============================================================ */
 
-/* The banner fills the full width, fixed height, shows the
-   movie covers grid image, with a dark gradient at the bottom
-   so the logo is readable */
 .auth-banner {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 280px;
   overflow: hidden;
   flex-shrink: 0;
-  background: #0a0a0a;
+  background: #111;
 }
 
+/* The actual image */
 .auth-banner::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image: url('../assets/banner.jpg');
   background-size: cover;
-  background-position: center top;
-  opacity: 0.9;
+  background-position: center center;
+  opacity: 1;
   z-index: 0;
 }
 
-/* Dark gradient overlay — stronger at bottom so logo pops */
+/* Gradient: transparent at top → fades to the page bg color (#f0ebe3)
+   at the bottom so the image bleeds smoothly into the white form card */
 .auth-banner::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.20) 0%,
-    rgba(0,0,0,0.10) 40%,
-    rgba(0,0,0,0.65) 100%
+    rgba(0,0,0,0.25)  0%,
+    rgba(0,0,0,0.0)   35%,
+    rgba(240,235,227,0.0)  60%,
+    rgba(240,235,227,0.7)  80%,
+    rgba(240,235,227,1.0) 100%
   );
   z-index: 1;
 }
 
-/* Back / Language buttons float over the banner */
+/* Back / Language buttons */
 .auth-banner-top-bar {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -473,47 +474,61 @@ body {
 }
 
 .auth-back-btn {
-  background: rgba(0,0,0,0.45) !important;
-  border: 1px solid rgba(255,255,255,0.2) !important;
+  background: rgba(0,0,0,0.50) !important;
+  border: 1px solid rgba(255,255,255,0.25) !important;
   color: #fff !important;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .auth-lang-btn {
-  background: rgba(0,0,0,0.45) !important;
+  background: rgba(0,0,0,0.50) !important;
   border: 1px solid rgba(255,255,255,0.25) !important;
   color: #fff !important;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-/* Logo centered at the bottom of the banner */
+/* Logo: centered, sits in the lower-middle of the banner
+   White pill background so it's always readable */
 .auth-banner-logo {
   position: absolute;
-  bottom: 20px;
+  bottom: 48px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255,255,255,0.92);
+  border-radius: 50px;
+  padding: 10px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
 }
 
 .auth-logo-img {
-  width: 170px;
+  width: 150px;
   height: auto;
-  filter: drop-shadow(0 2px 16px rgba(0,0,0,0.8));
 }
 
-/* Form card overlaps banner by 24px */
+/* Form card: no gap, no overlap border — just flows right after banner */
 .auth-form-card {
-  margin-top: -24px !important;
-  border-radius: 20px 20px 16px 16px !important;
+  margin-top: 0 !important;
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  box-shadow: none !important;
   position: relative;
   z-index: 2;
+  background: var(--white) !important;
   margin-bottom: 40px !important;
+  padding-top: 28px !important;
 }
 
-/* Login/Register pages: remove any top padding, start flush */
+/* Login/Register pages: flush top, full scroll */
 #loginPage,
 #registerPage {
   padding-top: 0 !important;
@@ -521,4 +536,6 @@ body {
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  background: var(--white);
+}
 }

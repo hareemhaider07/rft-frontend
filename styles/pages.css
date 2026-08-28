@@ -2575,6 +2575,7 @@
    Spacing fixes — Wallet page sections
    ============================================================ */
 .wallet-page .wallet-card {
+  margin-top: 16px;
   margin-bottom: 16px;
 }
 .wallet-page .tx-tabs {

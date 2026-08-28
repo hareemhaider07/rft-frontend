@@ -53,6 +53,16 @@
           <div class="rlc-rate"><span>L3 Commission</span><strong>${d.commission_rates.level3}</strong></div>
         </div>
       `;
+
+      // ── Render referral QR using free QR API (no library needed) ──────────
+      const qrSection = document.getElementById('referralQrSection');
+      const qrCanvas  = document.getElementById('referralQrCanvas');
+      if (qrSection && qrCanvas && d.referral_link) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(d.referral_link)}&format=png&margin=10`;
+        qrCanvas.innerHTML = `<img src="${qrUrl}" alt="Referral QR Code" style="width:200px;height:200px;border-radius:8px;display:block;margin:0 auto;" onerror="this.style.display='none'">`;
+        qrSection.style.display = 'block';
+      }
+
     } catch (e) {
       card.innerHTML = '<div class="rlc-loading">Error loading referral info</div>';
     }

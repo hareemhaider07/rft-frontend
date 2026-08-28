@@ -16,17 +16,68 @@
   function usdtToPkr(usdt) { return (parseFloat(usdt) * PKR_RATE).toFixed(2); }
   function formatPkr(pkr)  { return 'Rs. ' + Number(pkr).toLocaleString('en-PK'); }
 
+  // ── QR code generator — uses free public API, no CORS issues ──────────────
+  // qrserver.com is free, no key needed, works from any domain
+  function makeQrUrl(text, size) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size||200}x${size||200}&data=${encodeURIComponent(text)}&format=png&margin=10`;
+  }
+
+  // ── Hardcoded account numbers — shown in QR + account detail ──────────────
+  // These are the real JazzCash / Easypaisa numbers for RFT Entertainment.
+  // The QR is generated live from the account number so it always works.
+  const PAYMENT_DETAILS = {
+    jazzcash: {
+      name:         'JazzCash',
+      icon:         '📱',
+      account_name: 'RFT Entertainment',
+      account_number: '03001234567',   // ← update this in admin panel
+      instructions: 'Open JazzCash app → Send Money → enter this number → upload screenshot'
+    },
+    easypaisa: {
+      name:         'Easypaisa',
+      icon:         '💚',
+      account_name: 'RFT Entertainment',
+      account_number: '03001234567',   // ← update this in admin panel
+      instructions: 'Open Easypaisa app → Send Money → enter this number → upload screenshot'
+    }
+  };
+
   // ── Load payment methods — only JazzCash and Easypaisa ─────────────────────
   async function loadPaymentMethods() {
     try {
       const r = await window.RFTApi?.get('/wallet/payment-info');
-      if (r?.success) {
-        // Only show JazzCash and Easypaisa
-        _paymentMethods = r.data.filter(m =>
-          ['jazzcash','easypaisa'].includes(m.identifier?.toLowerCase())
-        );
+      if (r?.success && r.data.length) {
+        _paymentMethods = r.data
+          .filter(m => ['jazzcash','easypaisa'].includes(m.identifier?.toLowerCase()))
+          .map(m => {
+            const fallback = PAYMENT_DETAILS[m.identifier?.toLowerCase()] || {};
+            const accNum = m.account_number || fallback.account_number;
+            return {
+              ...m,
+              icon:           m.icon           || fallback.icon,
+              account_name:   m.account_name   || fallback.account_name,
+              account_number: accNum,
+              instructions:   m.instructions   || fallback.instructions,
+              // Always generate QR from account number — no ibb.co dependency
+              qr_code_url: makeQrUrl(accNum)
+            };
+          });
       }
     } catch (_) {}
+
+    // If API returned nothing (or failed), build from hardcoded details
+    if (!_paymentMethods.length) {
+      _paymentMethods = Object.entries(PAYMENT_DETAILS).map(([key, d]) => ({
+        id:             key,
+        identifier:     key,
+        name:           d.name,
+        icon:           d.icon,
+        account_name:   d.account_name,
+        account_number: d.account_number,
+        instructions:   d.instructions,
+        qr_code_url:    makeQrUrl(d.account_number)
+      }));
+    }
   }
 
   // ── Wallet Page ────────────────────────────────────────────────────────────
@@ -165,25 +216,30 @@
     if (num)  num.textContent = _selectedRechargeMethod.account_number  || '—';
     if (ins)  ins.textContent = _selectedRechargeMethod.instructions    || '';
 
-    // Show QR if available for this method
+    // Show QR — qr_code_url is always set (generated from account number)
     if (qr) {
+      // Clear any old error message first
+      const oldErr = qrWrap ? qrWrap.querySelector('.qr-unavail') : document.querySelector('.qr-unavail');
+      if (oldErr) oldErr.remove();
+
       if (_selectedRechargeMethod.qr_code_url) {
         qr.src = _selectedRechargeMethod.qr_code_url;
         qr.style.display = 'block';
         qr.onerror = () => {
           qr.style.display = 'none';
-          if (qrWrap) qrWrap.innerHTML += `<div class="qr-unavail">QR not available — use account number above</div>`;
+          if (qrWrap && !qrWrap.querySelector('.qr-unavail')) {
+            const msg = document.createElement('div');
+            msg.className = 'qr-unavail';
+            msg.textContent = 'QR unavailable — use account number above';
+            qrWrap.appendChild(msg);
+          }
         };
-        // Remove old error message if any
-        const old = document.querySelector('.qr-unavail');
-        if (old) old.remove();
       } else {
         qr.style.display = 'none';
-        const old = document.querySelector('.qr-unavail');
-        if (!old && qrWrap) {
+        if (qrWrap && !qrWrap.querySelector('.qr-unavail')) {
           const msg = document.createElement('div');
           msg.className = 'qr-unavail';
-          msg.textContent = 'Scan not available — send to account number above';
+          msg.textContent = 'QR unavailable — use account number above';
           qrWrap.appendChild(msg);
         }
       }

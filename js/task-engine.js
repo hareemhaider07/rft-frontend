@@ -591,54 +591,127 @@
     img.src = urls[0];
   }
 
+  // ── Trailer task completion flow ──────────────────────────────────────────
+  // When user clicks a trailer: open YouTube, start 30s timer, then complete task
+  let _trailerTimers = {}; // track per-card timers
+
+  function handleTrailerClick(e, card, taskId, youtubeUrl) {
+    e.preventDefault();
+
+    // If no tasks loaded or daily limit reached, just open YouTube
+    if (!_tasks.length || _stats.remaining_today <= 0) {
+      window.open(youtubeUrl, '_blank', 'noopener');
+      return;
+    }
+
+    // Already processing this card
+    if (card.dataset.processing === 'true') return;
+    card.dataset.processing = 'true';
+
+    // Open YouTube immediately
+    window.open(youtubeUrl, '_blank', 'noopener');
+
+    // Show countdown on card
+    const ytRow = card.querySelector('.tr-yt-row');
+    const original = ytRow ? ytRow.innerHTML : '';
+    let seconds = 30;
+
+    if (ytRow) {
+      ytRow.innerHTML = `<span class="tr-countdown">Earning in ${seconds}s…</span>`;
+    }
+
+    // Start task on backend
+    startTask(taskId).then(session => {
+      if (!session) {
+        // failed to start — reset card
+        card.dataset.processing = 'false';
+        if (ytRow) ytRow.innerHTML = original;
+        return;
+      }
+
+      const interval = setInterval(async () => {
+        seconds--;
+        if (ytRow) ytRow.innerHTML = `<span class="tr-countdown">Earning in ${seconds}s…</span>`;
+
+        if (seconds <= 0) {
+          clearInterval(interval);
+          const result = await completeTask(taskId, session.session_id, 30);
+          card.dataset.processing = 'false';
+          if (result) {
+            if (ytRow) ytRow.innerHTML = `<span class="tr-done">✓ Rs. ${Math.round(result.reward_usdt * 280)} earned!</span>`;
+            // Refresh stats
+            _stats.completed_today = (_stats.completed_today || 0) + 1;
+            _stats.remaining_today = Math.max(0, (_stats.remaining_today || 0) - 1);
+            // Refresh home balance
+            refreshHomeBalance();
+            // Refresh My Tasks page if open
+            loadMyTasks();
+          } else {
+            if (ytRow) ytRow.innerHTML = original;
+          }
+        }
+      }, 1000);
+    });
+  }
+
   function renderTrailerReel() {
     const grid    = document.getElementById('trailerGrid');
     const counter = document.getElementById('trailerCount');
     if (!grid) return;
 
-    const list = buildUniqueTrailers();
-    if (counter) counter.textContent = list.length;
+    // Fetch fresh tasks so we have real task IDs for completion
+    fetchTasks().then(() => {
+      const list = buildUniqueTrailers();
+      if (counter) counter.textContent = list.length;
 
-    const playSvg = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+      const playSvg = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
 
-    grid.innerHTML = '';
-    list.forEach((t, i) => {
-      const [a, b] = TR_PALETTES[i % TR_PALETTES.length];
+      grid.innerHTML = '';
+      list.forEach((t, i) => {
+        // Map trailer to a real task ID (cycle through available tasks)
+        const taskId = _tasks.length ? _tasks[i % _tasks.length]?.id : null;
+        const youtubeUrl = `https://www.youtube.com/watch?v=${t.id}`;
+        const [a, b] = TR_PALETTES[i % TR_PALETTES.length];
 
-      const card = document.createElement('a');
-      card.className   = 'tr-card';
-      card.href        = `https://www.youtube.com/watch?v=${t.id}`;
-      card.target      = '_blank';
-      card.rel         = 'noopener noreferrer';
-      card.setAttribute('aria-label', `Watch ${t.title} on YouTube`);
+        const card = document.createElement('div');
+        card.className = 'tr-card';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Watch ${t.title} on YouTube`);
 
-      card.innerHTML = `
-        <div class="tr-poster" style="--pa:${a};--pb:${b}">
-          <img class="tr-thumb" alt="${t.title}" loading="lazy" decoding="async">
-          <div class="tr-thumb-fallback" style="display:none">
-            <span>${t.title}</span>
+        card.innerHTML = `
+          <div class="tr-poster" style="--pa:${a};--pb:${b}">
+            <img class="tr-thumb" alt="${t.title}" loading="lazy" decoding="async">
+            <div class="tr-thumb-fallback" style="display:none">
+              <span>${t.title}</span>
+            </div>
+            <div class="tr-play">${playSvg}</div>
+            <div class="tr-overlay"></div>
           </div>
-          <div class="tr-play">${playSvg}</div>
-          <div class="tr-overlay"></div>
-        </div>
-        <div class="tr-body">
-          <span class="tr-studio">${t.studio}</span>
-          <div class="tr-title">${t.title}</div>
-          <div class="tr-meta">${t.meta}</div>
-          <div class="tr-yt-row">
-            <svg viewBox="0 0 24 24" fill="#ff0033" width="14" height="14">
-              <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z"/>
-            </svg>
-            Watch on YouTube
+          <div class="tr-body">
+            <span class="tr-studio">${t.studio}</span>
+            <div class="tr-title">${t.title}</div>
+            <div class="tr-meta">${t.meta}</div>
+            <div class="tr-yt-row">
+              <svg viewBox="0 0 24 24" fill="#ff0033" width="14" height="14">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z"/>
+              </svg>
+              Watch on YouTube
+            </div>
           </div>
-        </div>
-      `;
+        `;
 
-      // Attach thumb after element is in DOM tree (onerror needs live element)
-      const img = card.querySelector('.tr-thumb');
-      attachThumbFallback(img, t.id);
+        // Wire click — task completion flow if task available, else direct open
+        if (taskId) {
+          card.addEventListener('click', (e) => handleTrailerClick(e, card, taskId, youtubeUrl));
+        } else {
+          card.addEventListener('click', () => window.open(youtubeUrl, '_blank', 'noopener'));
+        }
 
-      grid.appendChild(card);
+        const img = card.querySelector('.tr-thumb');
+        attachThumbFallback(img, t.id);
+        grid.appendChild(card);
+      });
     });
   }
 

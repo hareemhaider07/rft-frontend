@@ -45,18 +45,22 @@
         console.error('Spin prizes failed:', r);
         return;
       }
-      _prizes   = WHEEL_PRIZES;   // always use 8 unique segments for the wheel
+      _prizes   = WHEEL_PRIZES;
       _canSpin  = r.data.can_spin;
+
+      const spinsLeft = r.data.spins_remaining ?? r.data.spins_left ?? r.data.remaining ?? 0;
+      const spinsUsed = r.data.spins_used ?? 0;
+      const spinsAllowed = r.data.spins_allowed ?? r.data.daily_limit ?? 1;
 
       // Update status bar
       const countEl = document.getElementById('spinCountBadge');
       const subEl   = document.getElementById('spinSubText');
       const btn     = document.getElementById('spinBtn');
 
-      if (countEl) countEl.textContent = r.data.spins_remaining;
+      if (countEl) countEl.textContent = spinsLeft;
       if (subEl) {
-        subEl.textContent = r.data.can_spin
-          ? `${r.data.spins_used} of ${r.data.spins_allowed} spins used today`
+        subEl.textContent = _canSpin
+          ? `${spinsUsed} of ${spinsAllowed} spins used today`
           : 'All spins used — come back tomorrow!';
       }
       if (btn) {
@@ -117,20 +121,16 @@
       _ctx.lineWidth = 1.5;
       _ctx.stroke();
 
-      // Prize label — show PKR instead of USDT
+      // Prize label — PKR display
       _ctx.save();
       _ctx.translate(cx, cy);
       _ctx.rotate(startAngle + segAngle / 2);
       _ctx.textAlign = 'right';
-      _ctx.fillStyle = '#ffffff';
+      _ctx.fillStyle = '#fff';
       _ctx.font = 'bold 10px Inter, sans-serif';
-      _ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      _ctx.shadowColor = 'rgba(0,0,0,0.6)';
       _ctx.shadowBlur  = 3;
-      // Convert USDT prize name to PKR for wheel display
       let label = prize.name;
-      if (prize.prize_type === 'usdt') {
-        label = 'Rs.' + Math.round(parseFloat(prize.prize_value) * 280).toLocaleString('en-PK');
-      }
       _ctx.fillText(label, radius - 8, 4);
       _ctx.restore();
     });
@@ -259,12 +259,19 @@
       card.className = 'spin-result-card src-empty';
     } else {
       const isUsdt = prize.prize_type === 'usdt';
+      const pkrAmt = isUsdt ? Math.round(parseFloat(prize.prize_value) * 280) : null;
+      const displayName = isUsdt
+        ? `Rs. ${pkrAmt.toLocaleString('en-PK')}`
+        : prize.prize_type === 'points'
+          ? `${prize.prize_value} Points`
+          : prize.name;
+
       if (icon)  icon.textContent  = isUsdt ? '💰' : '⭐';
       if (title) title.textContent = '🎉 Congratulations!';
-      if (val)   val.textContent   = prize.name;
+      if (val)   val.textContent   = displayName;
       if (sub) {
         if (isUsdt) {
-          sub.textContent = `Rs. ${prize.prize_value_pkr} credited to your wallet`;
+          sub.textContent = `Rs. ${pkrAmt.toLocaleString('en-PK')} credited to your wallet`;
         } else {
           sub.textContent = `${prize.prize_value} points added to your account`;
         }
@@ -278,16 +285,25 @@
     // Scroll to result
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     window.RFTCore?.showToast(
-      prize.prize_type === 'empty' ? 'Better luck next time!' : `You won ${prize.name}!`,
+      prize.prize_type === 'empty'
+        ? 'Better luck next time!'
+        : prize.prize_type === 'usdt'
+          ? `You won Rs. ${Math.round(parseFloat(prize.prize_value) * 280).toLocaleString('en-PK')}!`
+          : `You won ${prize.prize_value} Points!`,
       prize.prize_type === 'empty' ? 'info' : 'success'
     );
   }
 
   function showLastSpin(last) {
-    // subtle indication that today's spin was already used
     const sub = document.getElementById('spinSubText');
     if (sub && last.prize_type !== 'empty') {
-      sub.textContent = `Last win: ${last.prize_name}`;
+      let display = last.prize_name;
+      if (last.prize_type === 'usdt') {
+        display = 'Rs. ' + Math.round(parseFloat(last.prize_value) * 280).toLocaleString('en-PK');
+      } else if (last.prize_type === 'points') {
+        display = last.prize_value + ' Points';
+      }
+      sub.textContent = `Last win: ${display}`;
     }
   }
 

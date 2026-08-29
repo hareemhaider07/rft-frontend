@@ -63,7 +63,7 @@ html { font-size: 16px; }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  background: #ffffff;
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;

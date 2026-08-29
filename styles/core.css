@@ -89,6 +89,7 @@ body {
   min-height: 100vh;
   max-width: 500px; margin: 0 auto;
   background: var(--bg);
+  box-shadow: 0 0 40px rgba(0,0,0,0.12), 0 0 80px rgba(0,0,0,0.06);
 }
 
 /* ── Page system ───────────────────────────────────────────── */

@@ -139,8 +139,19 @@
         }
 
         // Show debug OTP in toast if dev mode returns it
-        if (r.debug_otp) {
-          window.RFTCore?.showToast(`Dev OTP: ${r.debug_otp}`, 'info');
+        if (r.debug_otp || r.reset_otp) {
+          const otp = r.reset_otp || r.debug_otp;
+          // Auto-fill the OTP input so user doesn't have to type it
+          const otpInput = document.getElementById('forgotOtp');
+          if (otpInput) otpInput.value = otp;
+          window.RFTCore?.showToast(`Your OTP: ${otp} (auto-filled)`, 'info');
+          // Update banner to show OTP directly
+          const banner = document.getElementById('otpDeliveryBanner');
+          const text   = document.getElementById('otpDeliveryText');
+          if (banner && text) {
+            banner.className = 'otp-delivery-banner otp-delivery-fallback';
+            text.textContent = `Your OTP code is: ${otp} — enter it below`;
+          }
         }
 
         // Start 60s countdown for resend button

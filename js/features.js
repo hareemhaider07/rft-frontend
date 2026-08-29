@@ -534,18 +534,9 @@
     // Withdraw page — load saved methods
     document.addEventListener('rft:page:withdrawPage', loadWithdrawSavedMethods);
 
-    // Referral page — render QR + team stats
+    // Referral page — team stats only (QR section removed)
     document.addEventListener('rft:page:referralPage', async () => {
-      // Wait for referral info to load first
-      setTimeout(async () => {
-        try {
-          const r = await window.RFTApi?.get('/referral/info');
-          if (r?.success && r.data.referral_link) {
-            renderReferralQR(r.data.referral_link);
-          }
-        } catch (_) {}
-        loadTeamStats();
-      }, 500);
+      loadTeamStats();
     });
 
     // Wallet page — update frozen balance

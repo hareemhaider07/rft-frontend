@@ -247,18 +247,21 @@
   flex: 1;
   text-align: center;
   padding: 10px 4px;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid rgba(255,255,255,.3);
 }
 .wstat:last-child { border-right: none; }
 .wstat-label {
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff !important;
   margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
 }
 .wstat-val {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--gold);
+  font-weight: 800;
+  color: #fff !important;
 }
 
 /* Recharge / Withdraw */
